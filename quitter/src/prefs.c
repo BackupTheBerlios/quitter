@@ -104,6 +104,7 @@ xml_read_habit(xmlNode *root,
                                 xml_read_int(node, "month") - 1;
                         habit->quittime.tm_year = 
                                 xml_read_int(node, "year") - 1900;
+                        habit->quittime.tm_isdst = -1;
                 } else if (! strcmp(node->name, "cost")) {
                         habit->units_per_day = 
                                 xml_read_int(node, "units_per_day");
@@ -242,3 +243,4 @@ get_prefs_file ()
 #endif
         return prefs_file;
 }
+

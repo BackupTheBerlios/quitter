@@ -153,15 +153,15 @@ update_stats ()
         if (NULL == appdata->habits || appdata->habits->len < 1) {
                 return TRUE;
         }
-        
+
         time_t now = time(NULL);
         tzset();
         struct tm cur_tm = *localtime(&now);
 
         HABIT *habit = get_selected_habit ();
-        
+
         gchar* cleantime = print_clean_time(cur_tm, habit->quittime);
-        
+
         // show clean time as the applet icons tooltip 
         GtkTooltipsData* tooltips = 
                 gtk_tooltips_data_get(GTK_WIDGET (appdata->applet));
@@ -186,7 +186,7 @@ update_stats ()
                 double secs_passed;
                 get_habit_details (habit, now, &saved, &spent_per_day,
                         &unused_units, &secs_passed);
-                
+
                 gchar* money_saved = g_strdup_printf("%.2f", saved);
                 GtkLabel* labelSavedValue = (GtkLabel*)lookup_widget(
                         appdata->windowStats, "labelSavedValue");
@@ -236,7 +236,6 @@ update_stats ()
                         appdata->windowStats, "labelCleanValueTotal");
                 gtk_label_set_text(labelCleanValueTotal, clean_total);
                 g_free(clean_total), clean_total = NULL;
-                
         }
         return TRUE;
 }
@@ -256,7 +255,7 @@ get_habit_details (HABIT *habit,
 
         *spent_per_day = price_per_unit * habit->units_per_day;
         float spent_sec = *spent_per_day / 24 / 60 / 60;
-        
+
         double secs = difftime(now, mktime(&habit->quittime));
         *saved = secs * spent_sec;
         
@@ -319,3 +318,4 @@ print_clean_time(struct tm cur_tm,
                         months, days, hours, minutes);
         }
 }
+
