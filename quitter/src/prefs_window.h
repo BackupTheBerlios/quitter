@@ -28,41 +28,12 @@
 void 
 create_prefs_window();
 
-void
-on_prefs_select_habit(GtkTreeSelection *selection, 
-        gpointer data);
-        
-void
-on_prefs_destroy (GtkObject *object, 
-        gpointer data);
-        
-void
-on_apply_prefs(GtkButton *button,
-        gpointer user_data);
-        
-void
-on_add_habit(GtkButton *button,
-        gpointer user_data);
-        
-void
-on_remove_habit(GtkButton *button,
-        gpointer user_data);
-
-void
-on_edit_habit(GtkButton *button,
-        gpointer user_data);
-        
 gchar *
 print_quittime(HABIT *habit);
 
 void
 update_selected_habit ();
 
-void
-on_worst_toggled (GtkCellRendererToggle *cellrenderertoggle,
-        gchar *arg1,
-        gpointer user_data);
-        
 void
 update_worst_habit_selection (GtkTreeView *treeview,
         HABIT *new_selection);

@@ -39,8 +39,8 @@ struct _HABIT
         gboolean worst;
 };
 
-void 
-read_prefs(APPDATA *app);
+gboolean 
+read_prefs (APPDATA *app);
 
 void
 write_prefs(APPDATA *app);

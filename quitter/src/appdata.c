@@ -31,7 +31,7 @@ new_appdata()
         appdata->about = NULL;
         appdata->habits = g_ptr_array_new();
 
-        read_prefs(appdata);
+        appdata->first_run = read_prefs (appdata);
         
         return appdata;
 }

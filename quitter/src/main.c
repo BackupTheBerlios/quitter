@@ -59,6 +59,9 @@ int WINAPI WinMain (HINSTANCE hThisInstance,
         MinimizeWndToTray (hwnd);
         create_tray_icon (hwnd, hThisInstance);
         
+        start_timer ();
+        check_first_run ();
+
         gtk_main();
         return 0;
 }

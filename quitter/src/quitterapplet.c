@@ -93,6 +93,7 @@ quitter_applet_fill_contents(GtkWidget *applet)
         appdata = new_appdata ();
         appdata->main_window = applet;
         start_timer ();
+        check_first_run ();
 }
 
 gboolean

@@ -746,7 +746,7 @@ create_windowAbout (void)
   hbox6 = gtk_hbox_new (FALSE, 0);
   gtk_widget_set_name (hbox6, "hbox6");
   gtk_widget_show (hbox6);
-  gtk_box_pack_start (GTK_BOX (vbox10), hbox6, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox10), hbox6, TRUE, TRUE, 10);
 
   imageLogo = create_pixmap (windowAbout, NULL);
   gtk_widget_set_name (imageLogo, "imageLogo");
@@ -756,7 +756,7 @@ create_windowAbout (void)
   vboxDescription = gtk_vbox_new (FALSE, 5);
   gtk_widget_set_name (vboxDescription, "vboxDescription");
   gtk_widget_show (vboxDescription);
-  gtk_box_pack_start (GTK_BOX (hbox6), vboxDescription, TRUE, TRUE, 1);
+  gtk_box_pack_start (GTK_BOX (hbox6), vboxDescription, TRUE, TRUE, 5);
 
   labelCopyright = gtk_label_new ("copyright");
   gtk_widget_set_name (labelCopyright, "labelCopyright");

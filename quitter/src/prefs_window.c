@@ -29,6 +29,210 @@
 #define PREFS_COLUMN_WORST 2
 #define PREFS_COLUMN_DATA 3
 
+void
+on_apply_prefs(GtkButton *button,
+        gpointer user_data)
+{
+      	GtkEntry* entry = (GtkEntry*)lookup_widget (
+                appdata->windowPrefs, 
+                "entryUserName");
+        G_CONST_RETURN gchar *text = gtk_entry_get_text (entry);
+        if (!text || g_utf8_strlen(text,-1) < 1) {
+                error_msg("Please enter you name.", appdata->windowPrefs);
+                return;
+        }
+        g_free(appdata->username);
+        appdata->username = g_strdup(text);
+        
+        GtkTreeView* treeviewHabits = (GtkTreeView*)lookup_widget (
+                appdata->windowPrefs, 
+                "treeviewHabits");
+        GtkTreeModel *model = gtk_tree_view_get_model(treeviewHabits);
+        GtkTreeIter iter;
+        gboolean more_items = FALSE;
+        for(more_items = gtk_tree_model_get_iter_first (model, &iter); 
+        more_items;
+        more_items = gtk_tree_model_iter_next(model, &iter)) {
+                HABIT *habit = NULL;
+                gtk_tree_model_get (model, &iter, 
+                        PREFS_COLUMN_DATA, &habit, 
+                        -1);
+                if (is_user_added_habit(appdata, habit)) {
+                        g_ptr_array_add(appdata->habits, habit);
+                }
+        }
+        
+        GPtrArray *deleted_items = g_ptr_array_new();
+        int i;
+        for (i = 0; i < appdata->habits->len; i++) {
+                gboolean is_deleted = TRUE;
+                HABIT *habit = g_ptr_array_index(appdata->habits, i);
+                for(more_items = gtk_tree_model_get_iter_first (model, &iter); 
+                more_items;
+                more_items = gtk_tree_model_iter_next(model, &iter)) {
+                        HABIT *item = NULL;
+                        gtk_tree_model_get (model, &iter, 
+                                PREFS_COLUMN_DATA, &item, 
+                                -1);
+                        if (item == habit) {
+                                is_deleted = FALSE;
+                                break;
+                        }
+                }
+                if (is_deleted) {
+                        g_ptr_array_add(deleted_items, habit);
+                }
+        }
+        for (i = 0; i < deleted_items->len; i++) {
+                HABIT *habit = g_ptr_array_index(deleted_items, i);
+                g_ptr_array_remove(appdata->habits, habit);
+                free_habit(habit);
+        }
+        g_ptr_array_free(deleted_items, FALSE);
+        
+        show_stats_user_data ();
+        
+        write_prefs(appdata);
+        
+        on_window_close(button, appdata->windowPrefs);
+}
+
+void
+on_prefs_select_habit(GtkTreeSelection *selection, 
+        gpointer data)
+{
+        GtkTreeIter iter;
+        GtkTreeModel *model;
+        gboolean selected = gtk_tree_selection_get_selected (
+                selection, &model, &iter);
+        
+        GtkWidget *buttonRemoveHabit = lookup_widget (appdata->windowPrefs,
+                "buttonRemoveHabit");
+        gtk_widget_set_sensitive(buttonRemoveHabit, selected);
+        
+        GtkWidget *buttonEditHabit = lookup_widget (appdata->windowPrefs,
+                "buttonEditHabit");
+        gtk_widget_set_sensitive(buttonEditHabit, selected);
+}
+
+void
+on_worst_toggled (GtkCellRendererToggle *cellrenderertoggle,
+        gchar *arg1,
+        gpointer user_data)
+{
+        GtkTreeView *treeviewHabits = GTK_TREE_VIEW (user_data);
+        GtkTreeModel *model = gtk_tree_view_get_model(treeviewHabits);
+        GtkTreeIter iter;
+        GtkTreeSelection* selection = gtk_tree_view_get_selection (
+                GTK_TREE_VIEW (user_data));
+        HABIT *habit = NULL;
+        if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
+                gtk_tree_model_get (model, &iter, PREFS_COLUMN_DATA, &habit, -1);
+                update_worst_habit_selection (treeviewHabits, habit);
+        }
+}
+
+void
+on_remove_habit(GtkButton *button,
+        gpointer user_data)
+{
+        GtkTreeView *treeviewHabits = (GtkTreeView *)user_data;
+        GtkTreeSelection* selection = gtk_tree_view_get_selection (
+                GTK_TREE_VIEW (treeviewHabits));
+        GtkTreeIter iter;
+        GtkTreeModel *model = NULL;
+        if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
+                HABIT *habit = NULL;
+                gchar *quittime = NULL;
+                gtk_tree_model_get (model, &iter, 
+                        PREFS_COLUMN_QUITTIME, &quittime, 
+                        PREFS_COLUMN_DATA, &habit, 
+                        -1);
+                if (is_user_added_habit(appdata, habit)) {
+                        free_habit(habit);
+                }
+                g_free(quittime);
+                gtk_list_store_remove (GTK_LIST_STORE(model), &iter);
+        }
+        
+        if (gtk_tree_model_get_iter_first (model, &iter)) {
+                HABIT *habit = NULL;
+                gtk_tree_model_get (model, &iter, PREFS_COLUMN_DATA, &habit, -1);
+                update_worst_habit_selection (treeviewHabits, habit);
+        }
+}
+
+void
+on_add_habit(GtkButton *button,
+        gpointer user_data)
+{
+        GtkTreeView* habits_list = (GtkTreeView *)user_data;
+        GtkListStore *store = (GtkListStore *) gtk_tree_view_get_model (
+                habits_list);
+        HABIT *habit = new_habit();
+        GtkTreeIter iter;
+        gboolean is_first = ! gtk_tree_model_get_iter_first (
+                GTK_TREE_MODEL (store), &iter);
+        gtk_list_store_append (store, &iter);
+        gtk_list_store_set (store, &iter, 
+                PREFS_COLUMN_NAME, habit->name,
+                PREFS_COLUMN_QUITTIME, print_quittime(habit),
+                PREFS_COLUMN_WORST, FALSE,
+                PREFS_COLUMN_DATA, habit,
+                -1);
+        if (is_first) {
+                update_worst_habit_selection (habits_list, habit);
+        }
+}
+
+void
+on_edit_habit(GtkButton *button,
+        gpointer user_data)
+{
+        if (! appdata->windowHabit) {
+                GtkTreeView *treeviewHabits = (GtkTreeView *)user_data;
+                GtkTreeSelection* selection = gtk_tree_view_get_selection (
+                        GTK_TREE_VIEW (treeviewHabits));
+                GtkTreeIter iter;
+                GtkTreeModel *model = NULL;
+                if (! gtk_tree_selection_get_selected (selection, 
+                                &model, &iter)) {
+                        return;
+                }
+                HABIT *habit = NULL;
+                gtk_tree_model_get (model, &iter, 
+                        PREFS_COLUMN_DATA, &habit, 
+                        -1);
+                create_edit_window(habit);
+        }
+        gtk_window_present((GtkWindow *)appdata->windowHabit);
+}
+
+void
+on_prefs_destroy (GtkObject *object, 
+        gpointer data)
+{
+        GtkTreeView* treeviewHabits = (GtkTreeView *)data;
+        GtkTreeModel *model = gtk_tree_view_get_model(treeviewHabits);
+        GtkTreeIter iter;
+        gboolean more_items; 
+        for(more_items = gtk_tree_model_get_iter_first (model, &iter); 
+                        more_items;
+                        more_items = gtk_tree_model_iter_next(model, &iter)) {
+                HABIT *habit = NULL;
+                gchar *quittime = NULL;
+                gtk_tree_model_get (model, &iter, 
+                                PREFS_COLUMN_QUITTIME, &quittime, 
+                                PREFS_COLUMN_DATA, &habit, 
+                                -1);
+                if (is_user_added_habit(appdata, habit)) {
+                        free_habit(habit);
+                }
+                g_free(quittime);
+        }        
+        appdata->windowPrefs = NULL;
+}
+
 void 
 create_prefs_window()
 {
@@ -160,192 +364,6 @@ create_prefs_window()
        gtk_widget_show_all (appdata->windowPrefs);
 }
 
-void
-on_prefs_select_habit(GtkTreeSelection *selection, 
-        gpointer data)
-{
-        GtkTreeIter iter;
-        GtkTreeModel *model;
-        gboolean selected = gtk_tree_selection_get_selected (
-                selection, &model, &iter);
-        
-        GtkWidget *buttonRemoveHabit = lookup_widget (appdata->windowPrefs,
-                "buttonRemoveHabit");
-        gtk_widget_set_sensitive(buttonRemoveHabit, selected);
-        
-        GtkWidget *buttonEditHabit = lookup_widget (appdata->windowPrefs,
-                "buttonEditHabit");
-        gtk_widget_set_sensitive(buttonEditHabit, selected);
-}
-
-void
-on_prefs_destroy (GtkObject *object, 
-        gpointer data)
-{
-        GtkTreeView* treeviewHabits = (GtkTreeView *)data;
-        GtkTreeModel *model = gtk_tree_view_get_model(treeviewHabits);
-        GtkTreeIter iter;
-        gboolean more_items; 
-        for(more_items = gtk_tree_model_get_iter_first (model, &iter); 
-                        more_items;
-                        more_items = gtk_tree_model_iter_next(model, &iter)) {
-                HABIT *habit = NULL;
-                gchar *quittime = NULL;
-                gtk_tree_model_get (model, &iter, 
-                                PREFS_COLUMN_QUITTIME, &quittime, 
-                                PREFS_COLUMN_DATA, &habit, 
-                                -1);
-                if (is_user_added_habit(appdata, habit)) {
-                        free_habit(habit);
-                }
-                g_free(quittime);
-        }        
-        appdata->windowPrefs = NULL;
-}
-
-void
-on_apply_prefs(GtkButton *button,
-        gpointer user_data)
-{
-      	GtkEntry* entry = (GtkEntry*)lookup_widget (
-                appdata->windowPrefs, 
-                "entryUserName");
-        G_CONST_RETURN gchar *text = gtk_entry_get_text (entry);
-        if (!text || g_utf8_strlen(text,-1) < 1) {
-                error_msg("Please enter you name.", appdata->windowPrefs);
-                return;
-        }
-        g_free(appdata->username);
-        appdata->username = g_strdup(text);
-        
-        GtkTreeView* treeviewHabits = (GtkTreeView*)lookup_widget (
-                appdata->windowPrefs, 
-                "treeviewHabits");
-        GtkTreeModel *model = gtk_tree_view_get_model(treeviewHabits);
-        GtkTreeIter iter;
-        gboolean more_items = FALSE;
-        for(more_items = gtk_tree_model_get_iter_first (model, &iter); 
-        more_items;
-        more_items = gtk_tree_model_iter_next(model, &iter)) {
-                HABIT *habit = NULL;
-                gtk_tree_model_get (model, &iter, 
-                        PREFS_COLUMN_DATA, &habit, 
-                        -1);
-                if (is_user_added_habit(appdata, habit)) {
-                        g_ptr_array_add(appdata->habits, habit);
-                }
-        }
-        
-        GPtrArray *deleted_items = g_ptr_array_new();
-        int i;
-        for (i = 0; i < appdata->habits->len; i++) {
-                gboolean is_deleted = TRUE;
-                HABIT *habit = g_ptr_array_index(appdata->habits, i);
-                for(more_items = gtk_tree_model_get_iter_first (model, &iter); 
-                more_items;
-                more_items = gtk_tree_model_iter_next(model, &iter)) {
-                        HABIT *item = NULL;
-                        gtk_tree_model_get (model, &iter, 
-                                PREFS_COLUMN_DATA, &item, 
-                                -1);
-                        if (item == habit) {
-                                is_deleted = FALSE;
-                                break;
-                        }
-                }
-                if (is_deleted) {
-                        g_ptr_array_add(deleted_items, habit);
-                }
-        }
-        for (i = 0; i < deleted_items->len; i++) {
-                HABIT *habit = g_ptr_array_index(deleted_items, i);
-                g_ptr_array_remove(appdata->habits, habit);
-                free_habit(habit);
-        }
-        g_ptr_array_free(deleted_items, FALSE);
-        
-        update_stats ();
-        
-        write_prefs(appdata);
-        on_window_close(button, appdata->windowPrefs);
-}
-
-void
-on_add_habit(GtkButton *button,
-        gpointer user_data)
-{
-        GtkTreeView* habits_list = (GtkTreeView *)user_data;
-        GtkListStore *store = (GtkListStore *) gtk_tree_view_get_model (
-                habits_list);
-        HABIT *habit = new_habit();
-        GtkTreeIter iter;
-        gboolean is_first = ! gtk_tree_model_get_iter_first (
-                GTK_TREE_MODEL (store), &iter);
-        gtk_list_store_append (store, &iter);
-        gtk_list_store_set (store, &iter, 
-                PREFS_COLUMN_NAME, habit->name,
-                PREFS_COLUMN_QUITTIME, print_quittime(habit),
-                PREFS_COLUMN_WORST, FALSE,
-                PREFS_COLUMN_DATA, habit,
-                -1);
-        if (is_first) {
-                update_worst_habit_selection (habits_list, habit);
-        }
-}
-
-void
-on_remove_habit(GtkButton *button,
-        gpointer user_data)
-{
-        GtkTreeView *treeviewHabits = (GtkTreeView *)user_data;
-        GtkTreeSelection* selection = gtk_tree_view_get_selection (
-                GTK_TREE_VIEW (treeviewHabits));
-        GtkTreeIter iter;
-        GtkTreeModel *model = NULL;
-        if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
-                HABIT *habit = NULL;
-                gchar *quittime = NULL;
-                gtk_tree_model_get (model, &iter, 
-                        PREFS_COLUMN_QUITTIME, &quittime, 
-                        PREFS_COLUMN_DATA, &habit, 
-                        -1);
-                if (is_user_added_habit(appdata, habit)) {
-                        free_habit(habit);
-                }
-                g_free(quittime);
-                gtk_list_store_remove (GTK_LIST_STORE(model), &iter);
-        }
-        
-        if (gtk_tree_model_get_iter_first (model, &iter)) {
-                HABIT *habit = NULL;
-                gtk_tree_model_get (model, &iter, PREFS_COLUMN_DATA, &habit, -1);
-                update_worst_habit_selection (treeviewHabits, habit);
-        }
-}
-
-void
-on_edit_habit(GtkButton *button,
-        gpointer user_data)
-{
-        if (! appdata->windowHabit) {
-                GtkTreeView *treeviewHabits = (GtkTreeView *)user_data;
-                GtkTreeSelection* selection = gtk_tree_view_get_selection (
-                        GTK_TREE_VIEW (treeviewHabits));
-                GtkTreeIter iter;
-                GtkTreeModel *model = NULL;
-                if (! gtk_tree_selection_get_selected (selection, 
-                                &model, &iter)) {
-                        return;
-                }
-                HABIT *habit = NULL;
-                gtk_tree_model_get (model, &iter, 
-                        PREFS_COLUMN_DATA, &habit, 
-                        -1);
-                create_edit_window(habit);
-        }
-        gtk_window_present((GtkWindow *)appdata->windowHabit);
-}
-
 gchar *
 print_quittime(HABIT *habit)
 {
@@ -386,23 +404,6 @@ update_selected_habit ()
 }
 
 void
-on_worst_toggled (GtkCellRendererToggle *cellrenderertoggle,
-        gchar *arg1,
-        gpointer user_data)
-{
-        GtkTreeView *treeviewHabits = GTK_TREE_VIEW (user_data);
-        GtkTreeModel *model = gtk_tree_view_get_model(treeviewHabits);
-        GtkTreeIter iter;
-        GtkTreeSelection* selection = gtk_tree_view_get_selection (
-                GTK_TREE_VIEW (user_data));
-        HABIT *habit = NULL;
-        if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
-                gtk_tree_model_get (model, &iter, PREFS_COLUMN_DATA, &habit, -1);
-                update_worst_habit_selection (treeviewHabits, habit);
-        }
-}
-
-void
 update_worst_habit_selection (GtkTreeView *treeview,
         HABIT *new_selection)
 {
@@ -428,4 +429,17 @@ show_prefs_window ()
         }
         gtk_window_present((GtkWindow*)appdata->windowPrefs);
 }        
+
+void
+check_first_run ()
+{
+        if (appdata->first_run) {
+                appdata->first_run = FALSE;
+                show_prefs_window ();
+                HABIT *habit = g_ptr_array_index (appdata->habits, 0);
+                if (habit) {
+                        create_edit_window (habit);
+                }
+        }
+}
 

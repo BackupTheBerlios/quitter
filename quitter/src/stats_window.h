@@ -24,14 +24,10 @@
 #include "prefs.h"
 
 void
-init_stats_window ();
+show_stats_user_data ();
 
 void
-on_stats_destroy (GtkObject *object, 
-        gpointer data);
-
-gboolean
-on_update_stats (gpointer data);
+init_stats_window ();
 
 HABIT *
 get_selected_habit ();
@@ -47,10 +43,6 @@ get_habit_details (HABIT *habit,
         int *unused_units,
         double *secs_passed);
 
-void
-on_stats_select_habit(GtkTreeSelection *selection, 
-        gpointer data);
-        
 gchar* 
 print_clean_time(struct tm cur_tm, 
         struct tm quittime);
@@ -58,15 +50,6 @@ print_clean_time(struct tm cur_tm,
 void
 start_timer ();
 
-gboolean
-on_stats_window_delete(GtkWidget *widget,
-        GdkEvent *event,
-        gpointer user_data);
-        
-void
-on_stats_window_close(GtkButton *button,
-        gpointer user_data);
-        
 void
 show_stats_window ();
         

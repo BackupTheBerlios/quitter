@@ -29,8 +29,8 @@
 #define PREFS_DIR "/.quitter"
 #define PREFS_FILE "prefs.xml"
 
-void 
-read_prefs(APPDATA *app)
+gboolean 
+read_prefs (APPDATA *app)
 {
         g_ptr_array_free(app->habits, TRUE);
         app->habits = g_ptr_array_new();
@@ -42,7 +42,8 @@ read_prefs(APPDATA *app)
 #endif        
         
         gchar* prefs = get_prefs_file ();
-        if (! g_file_test (prefs, G_FILE_TEST_EXISTS)) {
+        gboolean first_run = ! g_file_test (prefs, G_FILE_TEST_EXISTS);
+        if (first_run) {
                 app->username = "New user";
                 HABIT *habit = new_habit ();
                 g_ptr_array_add (app->habits, habit);
@@ -69,6 +70,8 @@ read_prefs(APPDATA *app)
         xmlCleanupParser();
         g_free(prefs);
         prefs = NULL;
+        
+        return first_run;
 }
 
 void

@@ -35,6 +35,7 @@ struct _APPDATA
         GtkWidget *windowHabit;
         GtkWidget *about;
         GPtrArray *habits;
+        gboolean first_run;
 };
 
 APPDATA* appdata;

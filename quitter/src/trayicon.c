@@ -61,6 +61,8 @@ LRESULT CALLBACK tray_icon_msg (HWND hwnd,
                 return 0;
         } else if (WM_COMMAND == message) {
                 if (ID_CLOSE == LOWORD(wParam)) {
+                        gtk_widget_destroy (appdata->main_window);
+                        appdata->main_window = NULL;
                         free_appdata(appdata), appdata = NULL;
                         remove_tray_icon ();
 			PostQuitMessage (0);

@@ -35,41 +35,55 @@
 #define STATS_COLUMN_DATA 1
 
 void
-init_stats_window ()
+on_stats_select_habit(GtkTreeSelection *selection, 
+        gpointer data)
 {
-        GtkLabel* labelUserValue = (GtkLabel*)lookup_widget(
-                appdata->windowStats,
+        update_stats ();
+}
+
+void
+show_stats_user_data ()
+{
+        GtkLabel* labelUserValue = (GtkLabel *)lookup_widget(
+                appdata->windowStats, 
                 "labelUserValue");
         gchar* username = g_strdup_printf(
                 "<span size=\"large\">%s</span>", 
                 appdata->username);
+        // todo: will this leak? have no clue..
         gtk_label_set_markup (labelUserValue, username);
         g_free(username);
-                
+        
         GtkTreeView* treeviewHabits = (GtkTreeView*)lookup_widget (
                 appdata->windowStats,
                 "treeviewHabits");
+                
+        GtkListStore *habits_store = (GtkListStore *)gtk_tree_view_get_model (
+                treeviewHabits);
+        if (habits_store) {
+                gtk_list_store_clear (habits_store);
+        } else {
+                habits_store = gtk_list_store_new (
+                        2, G_TYPE_STRING, G_TYPE_POINTER);
+                gtk_tree_view_set_model (treeviewHabits, 
+                        GTK_TREE_MODEL (habits_store));
+                g_object_unref(habits_store);
 
-        GtkListStore *habits_store = gtk_list_store_new (
-                2, G_TYPE_STRING, G_TYPE_POINTER);
-        gtk_tree_view_set_model (treeviewHabits, 
-                GTK_TREE_MODEL (habits_store));
-        g_object_unref(habits_store);
-                
-        GtkTreeSelection *selection = gtk_tree_view_get_selection (
-                treeviewHabits);
-        gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
-        g_signal_connect(G_OBJECT (selection), 
-                "changed", 
-                G_CALLBACK (on_stats_select_habit),
-                treeviewHabits);
-                
-        GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-        GtkTreeViewColumn *column = 
-                gtk_tree_view_column_new_with_attributes (
-                "Habit", renderer, "text", 0, NULL);
-        gtk_tree_view_append_column (
-                GTK_TREE_VIEW (treeviewHabits), column);
+                GtkTreeSelection *selection = gtk_tree_view_get_selection (
+                        treeviewHabits);
+                gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
+                g_signal_connect(G_OBJECT (selection), 
+                        "changed", 
+                        G_CALLBACK (on_stats_select_habit),
+                        treeviewHabits);
+                        
+                GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+                GtkTreeViewColumn *column = 
+                        gtk_tree_view_column_new_with_attributes (
+                        "Habit", renderer, "text", 0, NULL);
+                gtk_tree_view_append_column (
+                        GTK_TREE_VIEW (treeviewHabits), column);
+        }        
                 
         int i;
         for (i = 0; i < appdata->habits->len; i++) {
@@ -92,6 +106,8 @@ init_stats_window ()
                 HABIT *habit = NULL;
                 gtk_tree_model_get (model, &iter, STATS_COLUMN_DATA, &habit, -1);
                 if (habit->worst) {
+                        GtkTreeSelection *selection = 
+                                gtk_tree_view_get_selection (treeviewHabits);
                         gtk_tree_selection_select_iter (selection, &iter);
                         break;
                 }        
@@ -104,6 +120,43 @@ init_stats_window ()
                 gtk_widget_hide(frameTotals);
         }
         
+        update_stats ();
+}        
+
+void
+on_stats_destroy (GtkObject *object, 
+        gpointer data)
+{
+        update_stats ();
+        appdata->windowStats = NULL;
+}
+
+gboolean
+on_stats_window_delete(GtkWidget *widget,
+        GdkEvent *event,
+        gpointer user_data)
+{
+#ifndef __WIN32__
+        return on_window_delete (widget, event, user_data);
+#else
+        MinimizeWndToTray (GDK_WINDOW_HWND (appdata->main_window->window));        
+#endif
+}
+
+void
+on_stats_window_close(GtkButton *button,
+        gpointer user_data)
+{
+#ifndef __WIN32__
+        on_window_close (button, user_data);
+#else
+        MinimizeWndToTray (GDK_WINDOW_HWND (appdata->main_window->window));
+#endif
+}
+
+void
+init_stats_window ()
+{
         g_signal_connect (G_OBJECT (appdata->windowStats),
                 "destroy", 
                 G_CALLBACK (on_stats_destroy), 
@@ -120,19 +173,11 @@ init_stats_window ()
                 "clicked",
                 G_CALLBACK (on_stats_window_close),
                 appdata->windowStats);
+                
+        show_stats_user_data ();                
 
         move_window_to_last_position(appdata->windowStats, 
                         WINDOW_POSITIONX, WINDOW_POSITIONY);
-                
-        update_stats ();
-}
-
-void
-on_stats_destroy (GtkObject *object, 
-        gpointer data)
-{
-        update_stats ();
-        appdata->windowStats = NULL;
 }
 
 gboolean
@@ -293,13 +338,6 @@ get_habit_details (HABIT *habit,
         *secs_passed = secs;
 }        
 
-void
-on_stats_select_habit(GtkTreeSelection *selection, 
-        gpointer data)
-{
-        update_stats ();
-}
-
 gchar* 
 print_clean_time(struct tm cur_tm, 
         struct tm quittime)
@@ -350,31 +388,9 @@ print_clean_time(struct tm cur_tm,
 void
 start_timer ()
 {
+        // TODO: app doesn't close correctly under windows. must fix
         g_timeout_add (1000 * 60, on_update_stats, NULL);
         update_stats ();
-}
-
-gboolean
-on_stats_window_delete(GtkWidget *widget,
-        GdkEvent *event,
-        gpointer user_data)
-{
-#ifndef __WIN32__
-        return on_window_delete (widget, event, user_data);
-#else
-        MinimizeWndToTray (GDK_WINDOW_HWND (appdata->main_window->window));        
-#endif
-}
-
-void
-on_stats_window_close(GtkButton *button,
-        gpointer user_data)
-{
-#ifndef __WIN32__
-        on_window_close (button, user_data);
-#else
-        MinimizeWndToTray (GDK_WINDOW_HWND (appdata->main_window->window));
-#endif
 }
 
 void
