@@ -17,6 +17,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <libgnomeui/libgnomeui.h>
+
 #include "quitterapplet.h"
 #include "appdata.h"
 #include "stats_window.h"
@@ -75,6 +77,14 @@ quitter_applet_fill (PanelApplet * applet, const gchar * iid, gpointer data)
         appdata = new_appdata(applet);
         g_timeout_add(1000 * 60, // every minute
                 on_update_stats, NULL);
+                
+        char* icon_file = gnome_program_locate_file(NULL,
+                GNOME_FILE_DOMAIN_PIXMAP,
+                "quitter.png",
+                FALSE,
+                NULL);
+        gnome_window_icon_set_default_from_file (icon_file);
+        g_free(icon_file), icon_file = NULL;
                 
         update_stats ();
         

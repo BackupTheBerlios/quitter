@@ -29,7 +29,7 @@ void
 create_stats_window()
 {
         appdata->windowStats = create_windowStats ();
-                
+
         GtkLabel* labelUserValue = (GtkLabel*)lookup_widget(
                 appdata->windowStats,
                 "labelUserValue");
