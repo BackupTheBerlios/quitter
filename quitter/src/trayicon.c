@@ -65,7 +65,8 @@ LRESULT CALLBACK tray_icon_msg (HWND hwnd,
                         appdata->main_window = NULL;
                         free_appdata(appdata), appdata = NULL;
                         remove_tray_icon ();
-			PostQuitMessage (0);
+						PostQuitMessage (0);
+                        gtk_main_quit ();
                 } else if (ID_PROPERTIES == LOWORD(wParam)) {
                         show_prefs_window ();
                 } else if (ID_ABOUT == LOWORD(wParam)) {

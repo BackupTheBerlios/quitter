@@ -50,6 +50,7 @@ int WINAPI WinMain (HINSTANCE hThisInstance,
                     int nFunsterStil)
 {
         gtk_init (&_argc, &_argv);
+
         appdata = new_appdata ();
         appdata->windowStats = create_windowStats ();
         appdata->main_window = appdata->windowStats;
@@ -62,7 +63,7 @@ int WINAPI WinMain (HINSTANCE hThisInstance,
         start_timer ();
         check_first_run ();
 
-        gtk_main();
+        gtk_main ();
         return 0;
 }
 #endif
