@@ -77,7 +77,7 @@ quitter_applet_fill_contents(GtkWidget *applet)
 #ifdef __WIN32__
         gchar *imagefile = ".\\pixmaps\\quitter.png";
 #else
-        gchar *imagefile = "/usr/share/pixmaps/quitter.png"
+        gchar *imagefile = "/usr/share/pixmaps/quitter.png";
 #endif
 
         GtkWidget *event_box = gtk_event_box_new ();
