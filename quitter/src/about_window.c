@@ -104,10 +104,10 @@ create_about_window()
                 "clicked",
                 G_CALLBACK (on_window_close),
                 appdata->about);
-#endif                
                 
         move_window_to_last_position (appdata->about);
         gtk_widget_show_all (appdata->about);
+#endif                
 }
 
 void

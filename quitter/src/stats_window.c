@@ -44,6 +44,10 @@ on_stats_select_habit(GtkTreeSelection *selection,
 void
 show_stats_user_data ()
 {
+        if (! appdata->windowStats) {
+                return;
+        }
+        
         GtkLabel* labelUserValue = (GtkLabel *)lookup_widget(
                 appdata->windowStats, 
                 "labelUserValue");
@@ -389,7 +393,6 @@ print_clean_time(struct tm cur_tm,
 void
 start_timer ()
 {
-        // TODO: app doesn't close correctly under windows. must fix
         g_timeout_add (1000 * 60, on_update_stats, NULL);
         update_stats ();
 }
@@ -403,4 +406,3 @@ show_stats_window ()
         }
         gtk_window_present ((GtkWindow *) appdata->windowStats);
 }
-

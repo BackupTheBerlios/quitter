@@ -441,4 +441,3 @@ check_first_run ()
                 }
         }
 }
-
