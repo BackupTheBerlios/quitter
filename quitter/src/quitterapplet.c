@@ -77,10 +77,14 @@ quitter_applet_fill_contents(GtkWidget *applet)
         GtkWidget *event_box = gtk_event_box_new ();
 	gtk_container_add (GTK_CONTAINER (applet), event_box);
 
-	GtkWidget *image =
-		gtk_image_new_from_file ("/usr/share/pixmaps/quitter.png");
+        GtkWidget *image = NULL;
+#ifdef __WIN32__
+        image = gtk_image_new_from_file (".\\pixmaps\\quitter.png");
+#else
+        image = gtk_image_new_from_file ("/usr/share/pixmaps/quitter.png");
+#endif
 	gtk_container_add (GTK_CONTAINER (event_box), image);
-        
+	
 	g_signal_connect (G_OBJECT (event_box),
 			  "button_press_event",
 			  G_CALLBACK (on_button_press), NULL);

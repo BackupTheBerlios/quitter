@@ -28,13 +28,11 @@
 #include <libxml/parser.h>
 #include <time.h>
 
-typedef struct tm QUITTIME;
-
 typedef struct _HABIT HABIT;
 struct _HABIT
 {
         gchar* name;
-        QUITTIME quittime;
+        struct tm quittime;
         int units_per_day;
         float price_per_pack;
         int units_per_pack;
@@ -81,5 +79,8 @@ is_user_added_habit(APPDATA* app,
         
 void
 free_habit (HABIT *habit);
+
+gchar *
+get_prefs_file ();
 
 #endif

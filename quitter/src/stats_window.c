@@ -158,8 +158,7 @@ update_stats ()
         
         time_t now = time(NULL);
         tzset();
-        struct tm cur_tm;
-        localtime_r(&now, &cur_tm);
+        struct tm cur_tm = *localtime(&now);
 
         HABIT *habit = get_selected_habit ();
         

@@ -23,10 +23,11 @@
 #include <sys/types.h>
 #include <string.h>
 #include <stdlib.h>
+#include <glib.h>
 
 #define PREFS_ENCODING "UTF-8"
 #define PREFS_DIR "/.quitter"
-#define PREFS_FILE "/prefs.xml"
+#define PREFS_FILE "prefs.xml"
 
 void 
 read_prefs(APPDATA *app)
@@ -34,31 +35,35 @@ read_prefs(APPDATA *app)
         g_ptr_array_free(app->habits, TRUE);
         app->habits = g_ptr_array_new();
         
+#ifndef __WIN32__
         gchar* prefs_dir = g_strconcat(getenv("HOME"), PREFS_DIR, NULL);
         mkdir(prefs_dir, S_IRWXU);
         g_free(prefs_dir);
+#endif        
         
-        gchar* prefs = g_strconcat(
-                getenv("HOME"), PREFS_DIR, PREFS_FILE, NULL);
+        gchar* prefs = get_prefs_file ();
+        if (! g_file_test (prefs, G_FILE_TEST_EXISTS)) {
+                app->username = "New user";
+                HABIT *habit = new_habit ();
+                g_ptr_array_add (app->habits, habit);
+                write_prefs (app);
+                free_habit (habit);
+                g_ptr_array_remove (app->habits, habit);
+        }
+        
         xmlDocPtr doc = xmlReadFile(prefs, PREFS_ENCODING, 0);
         g_free(prefs);
         prefs = NULL;
-        if (NULL == doc) {
-                app->username = "User name";
-                HABIT *habit = new_habit();
-                g_ptr_array_add(app->habits, habit);
-        } else {
-                xmlNode *root = xmlDocGetRootElement(doc);
-                xmlNode *node = NULL;
-                for (node = root->children; node; node = node->next) {
-                        if (! strcmp(node->name, "username")) {
-                                xmlChar* username = xmlNodeGetContent(node);
-                                app->username = g_strdup(username);
-                                xmlFree(username);
-                        } else if (! strcmp(node->name, "habits")) {
-                                xml_read_habits(node, app->habits);
-                        }
-                }                
+        xmlNode *root = xmlDocGetRootElement(doc);
+        xmlNode *node = NULL;
+        for (node = root->children; node; node = node->next) {
+                if (! strcmp(node->name, "username")) {
+                        xmlChar* username = xmlNodeGetContent(node);
+                        app->username = g_strdup(username);
+                        xmlFree(username);
+                } else if (! strcmp(node->name, "habits")) {
+                        xml_read_habits(node, app->habits);
+                }
         }
         xmlFreeDoc(doc);
         xmlCleanupParser();
@@ -163,8 +168,7 @@ write_prefs(APPDATA *app)
         xmlTextWriterEndElement(writer); // preferences
         xmlTextWriterEndDocument(writer);
         xmlFreeTextWriter(writer);
-        gchar* prefs = g_strconcat(
-                getenv("HOME"), PREFS_DIR, PREFS_FILE, NULL);
+        gchar* prefs = get_prefs_file ();
         xmlSaveFormatFileEnc(prefs, doc, PREFS_ENCODING, 1);
         xmlFreeDoc(doc);
         g_free(prefs);
@@ -198,7 +202,7 @@ new_habit()
         habit->name = g_strdup("A nasty habit"); 
         time_t now = time(NULL);
         tzset();
-        localtime_r(&now, &habit->quittime);
+        habit->quittime = *localtime(&now);
         habit->units_per_day = 0;
         habit->price_per_pack = 0;
         habit->units_per_pack = 0;
@@ -225,4 +229,16 @@ free_habit (HABIT *habit)
         habit->name = NULL;
         g_free(habit);
         habit = NULL;
+}
+
+gchar *
+get_prefs_file ()
+{
+        gchar* prefs_file = NULL;
+#ifdef __WIN32__
+        prefs_file = g_strconcat (".\\", PREFS_FILE, NULL);
+#else
+        prefs_file = g_strconcat (getenv("HOME"), PREFS_DIR, "/", PREFS_FILE, NULL);
+#endif
+        return prefs_file;
 }
