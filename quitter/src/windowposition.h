@@ -21,22 +21,9 @@
 #define _WINDOWPOSITION_H
 
 #include <gtk/gtk.h>
-#ifndef __WIN32__
-#include <gconf/gconf-client.h>
-#endif
-
-#define WINDOW_POSITIONX "/apps/quitter/window/%s/positionx"
-#define WINDOW_POSITIONY "/apps/quitter/window/%s/positiony"
 
 void
-move_window_to_last_position(GtkWidget* widget,
-        gchar *GCONF_KEYX,
-        gchar *GCONF_KEYY);
-        
-void
-save_window_position(GtkWidget* widget, 
-        gchar *GCONF_KEYX,
-        gchar *GCONF_KEYY);
+move_window_to_last_position(GtkWidget* widget);
         
 void
 on_window_close(GtkButton *button,

@@ -359,8 +359,7 @@ create_prefs_window()
                 G_CALLBACK (on_prefs_destroy), 
                 treeviewHabits);
 
-       move_window_to_last_position(appdata->windowPrefs,
-               WINDOW_POSITIONX, WINDOW_POSITIONY);
+       move_window_to_last_position (appdata->windowPrefs);
        gtk_widget_show_all (appdata->windowPrefs);
 }
 

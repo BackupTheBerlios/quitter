@@ -106,6 +106,7 @@ create_about_window()
                 appdata->about);
 #endif                
                 
+        move_window_to_last_position (appdata->about);
         gtk_widget_show_all (appdata->about);
 }
 
@@ -120,7 +121,7 @@ void
 show_about_window ()
 {
         if (!appdata->about) {
-              create_about_window();  
+              create_about_window();
         }
         gtk_window_present((GtkWindow*)appdata->about);
 }

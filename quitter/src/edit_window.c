@@ -73,8 +73,7 @@ create_edit_window(HABIT *habit)
         set_entry_float(appdata->windowHabit, "entryPricePerPack", 
                 habit->price_per_pack);
         
-        move_window_to_last_position(appdata->windowHabit,
-                WINDOW_POSITIONX, WINDOW_POSITIONY);
+        move_window_to_last_position (appdata->windowHabit);
         gtk_widget_show_all (appdata->windowHabit);
 }
 

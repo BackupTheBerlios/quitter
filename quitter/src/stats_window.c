@@ -139,6 +139,7 @@ on_stats_window_delete(GtkWidget *widget,
 #ifndef __WIN32__
         return on_window_delete (widget, event, user_data);
 #else
+        save_window_position (appdata->main_window);
         MinimizeWndToTray (GDK_WINDOW_HWND (appdata->main_window->window));        
 #endif
 }
@@ -150,6 +151,7 @@ on_stats_window_close(GtkButton *button,
 #ifndef __WIN32__
         on_window_close (button, user_data);
 #else
+        save_window_position (appdata->main_window);
         MinimizeWndToTray (GDK_WINDOW_HWND (appdata->main_window->window));
 #endif
 }
@@ -176,8 +178,7 @@ init_stats_window ()
                 
         show_stats_user_data ();                
 
-        move_window_to_last_position(appdata->windowStats, 
-                        WINDOW_POSITIONX, WINDOW_POSITIONY);
+        move_window_to_last_position (appdata->windowStats);
 }
 
 gboolean
