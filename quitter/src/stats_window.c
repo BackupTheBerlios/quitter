@@ -186,8 +186,9 @@ update_stats ()
                 // show details in statistics window
                 float saved, spent_per_day;
                 int unused_units;
+                double secs_passed;
                 get_habit_details (habit, now, &saved, &spent_per_day,
-                        &unused_units);
+                        &unused_units, &secs_passed);
                 
                 gchar* money_saved = g_strdup_printf("%.2f", saved);
                 GtkLabel* labelSavedValue = (GtkLabel*)lookup_widget(
@@ -207,22 +208,38 @@ update_stats ()
                 gtk_label_set_text(labelUnitsValue, units);
                 g_free(units), units = NULL;
                 
-                // show total saved value
+                // find total saved value & overall clean time
                 float total_saved = 0;
+                HABIT *newest_quit = g_ptr_array_index (appdata->habits, 0);
+                double shortest_clean_time = difftime (now, 
+                                mktime(&newest_quit->quittime));
                 int i;
                 for (i = 0; i < appdata->habits->len; i++) {
                         habit = g_ptr_array_index(appdata->habits, i);
                         float saved, spent_per_day;
                         int unused_units;
+                        double secs_passed;
                         get_habit_details (habit, now, &saved, &spent_per_day,
-                                &unused_units);
+                                &unused_units, &secs_passed);
                         total_saved += saved;
+                        if (secs_passed < shortest_clean_time) {
+                                newest_quit = habit;
+                                shortest_clean_time = secs_passed;
+                        }
                 }
                 gchar* total = g_strdup_printf("%.2f", total_saved);
                 GtkLabel* labelSavedValueTotal = (GtkLabel*)lookup_widget(
                         appdata->windowStats, "labelSavedValueTotal");
                 gtk_label_set_text(labelSavedValueTotal, total);
                 g_free(total), total = NULL;
+                
+                gchar* clean_total = print_clean_time(cur_tm, 
+                        newest_quit->quittime);
+                GtkLabel *labelCleanValueTotal = (GtkLabel *)lookup_widget (
+                        appdata->windowStats, "labelCleanValueTotal");
+                gtk_label_set_text(labelCleanValueTotal, clean_total);
+                g_free(clean_total), clean_total = NULL;
+                
         }
         return TRUE;
 }
@@ -232,7 +249,8 @@ get_habit_details (HABIT *habit,
         time_t now,     
         float *saved,
         float *spent_per_day,
-        int *unused_units)
+        int *unused_units,
+        double *secs_passed)
 {
         float price_per_unit = 0;
         if (habit->price_per_pack > 0 ) {
@@ -247,6 +265,8 @@ get_habit_details (HABIT *habit,
         
         float units_sec = (float)habit->units_per_day / 24 / 60 / 60;
         *unused_units = units_sec * secs;
+        
+        *secs_passed = secs;
 }        
 
 void

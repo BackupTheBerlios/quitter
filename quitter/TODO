@@ -1,9 +1,10 @@
 * multiple habits - DONE
-* fix bug with multiple instances
+* fix bug with multiple instances - DONE
 * days passed
-* window icons
-* total clean & saved
+* window icons - DONE 
+* total clean & saved - DONE
 * worst habit (default in tooltip)
 * copy stats to clipboard
 * custom formatting for tooltip
 * custom clipboard copy format
+* port to windows - in progress

@@ -26,7 +26,7 @@
 
 #ifndef __WIN32__
 gboolean
-quitter_applet_fill (GtkWidget *applet, 
+quitter_applet_fill (PanelApplet *applet, 
         const gchar * iid, 
         gpointer data);
 #endif        
@@ -60,4 +60,3 @@ menu_show_prefs ();
 
 void
 menu_show_about ();
-

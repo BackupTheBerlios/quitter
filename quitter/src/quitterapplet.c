@@ -45,14 +45,16 @@ static const BonoboUIVerb quitter_menu_verbs [] = {
 
 #ifndef __WIN32__
 gboolean
-quitter_applet_fill (GtkWidget *applet, const gchar * iid, gpointer data)
+quitter_applet_fill (PanelApplet *applet, 
+        const gchar * iid, 
+        gpointer data)
 {
 	if (strcmp (iid, "OAFIID:QuitterApplet") != 0) {
 		return FALSE;
         }		
         
         if (! appdata) {
-                quitter_applet_fill_contents (applet);
+                quitter_applet_fill_contents ((GtkWidget *)applet);
                 panel_applet_setup_menu (PANEL_APPLET (applet),
                                 quitter_menu_xml,
                                 quitter_menu_verbs,
@@ -153,5 +155,4 @@ menu_show_about ()
               create_about_window();  
         }
         gtk_window_present((GtkWindow*)appdata->about);
-}        
-
+}

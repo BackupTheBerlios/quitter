@@ -44,7 +44,8 @@ get_habit_details (HABIT *habit,
         time_t now,     
         float *saved,
         float *spent_per_day,
-        int *unused_units);
+        int *unused_units,
+        double *secs_passed);
 
 void
 on_stats_select_habit(GtkTreeSelection *selection, 

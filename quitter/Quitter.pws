@@ -28,9 +28,6 @@ RunInTerminal=true
 [Project State]
 clean before build=false
 
-[filelist]
-0=/home/tanel/Projects/quitter/src/quitterapplet.c
-
 [Project Tree]
 0=0
 1=0:0
