@@ -5,4 +5,3 @@
 GtkWidget* create_windowStats (void);
 GtkWidget* create_windowPreferences (void);
 GtkWidget* create_windowEditHabit (void);
-GtkWidget* create_windowMain (void);

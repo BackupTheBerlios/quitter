@@ -17,9 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef __WIN32__
 #include <libgnomeui/libgnomeui.h>
-#endif
 
 #include "quitterapplet.h"
 #include "appdata.h"
@@ -35,15 +33,12 @@ static const char quitter_menu_xml [] =
         "             pixtype=\"stock\" pixname=\"gnome-stock-about\"/>\n"
         "</popup>\n";
         
-#ifndef __WIN32__
 static const BonoboUIVerb quitter_menu_verbs [] = {
         BONOBO_UI_VERB ("Properties", menu_prefs_cb),
         BONOBO_UI_VERB ("About",      menu_about_cb),
         BONOBO_UI_VERB_END
 };
-#endif
 
-#ifndef __WIN32__
 gboolean
 quitter_applet_fill (PanelApplet *applet, 
         const gchar * iid, 
@@ -69,31 +64,17 @@ quitter_applet_fill (PanelApplet *applet,
         }        
         return TRUE;
 }
-#endif
 
 void
 quitter_applet_fill_contents(GtkWidget *applet)
 {       
-#ifdef __WIN32__
-        gchar *imagefile = ".\\pixmaps\\quitter.png";
-#else
         gchar *imagefile = "/usr/share/pixmaps/quitter.png";
-#endif
 
         GtkWidget *event_box = gtk_event_box_new ();
 	gtk_container_add (GTK_CONTAINER (applet), event_box);
 
         GtkWidget *image = gtk_image_new_from_file (imagefile);
 	gtk_container_add (GTK_CONTAINER (event_box), image);
-	
-#ifdef __WIN32__
-	GdkPixbuf *icon = gdk_pixbuf_new_from_file (imagefile, NULL);
-	GList *icon_list = NULL;
-        icon_list = g_list_append (icon_list, icon);
-	gtk_window_set_default_icon_list (icon_list);
-	g_object_unref (G_OBJECT (icon));
-        g_list_free (icon_list);
-#endif	
 	
 	g_signal_connect (G_OBJECT (event_box),
 			  "button_press_event",
@@ -107,12 +88,9 @@ quitter_applet_fill_contents(GtkWidget *applet)
         GtkTooltips *tooltips = gtk_tooltips_new ();
         gtk_tooltips_set_tip (GTK_TOOLTIPS (tooltips), 
                 GTK_WIDGET (applet), "Quitter", "Quitter");
-
-        appdata = new_appdata(applet);
-        g_timeout_add(1000 * 60, // every minute
-                on_update_stats, NULL);
                 
-        update_stats ();
+        appdata = new_appdata ();
+        start_timer ();
 }
 
 gboolean
@@ -132,17 +110,18 @@ on_button_press (GtkWidget * event_box, GdkEventButton * event, gpointer data)
 void
 on_applet_destroy (GtkObject * object, gpointer data)
 {
-        free_appdata(appdata);
-        appdata = NULL;
+        free_appdata(appdata), appdata = NULL;
 }
 
-#ifndef __WIN32__
 void
 menu_prefs_cb( BonoboUIComponent *ui, 
         gpointer user_data, 
         const char *cname )
 {
-        menu_show_prefs ();
+        if (! appdata->windowPrefs) { 
+                create_prefs_window();
+        }
+        gtk_window_present((GtkWindow*)appdata->windowPrefs);
 }
 
 void
@@ -150,24 +129,9 @@ menu_about_cb( BonoboUIComponent *ui,
         gpointer user_data, 
         const char *cname )
 {
-        menu_show_about ();
-}
-#endif
-
-void
-menu_show_prefs ()
-{
-        if (! appdata->windowPrefs) { 
-                create_prefs_window();
-        }
-        gtk_window_present((GtkWindow*)appdata->windowPrefs);
-}    
-
-void
-menu_show_about ()
-{
         if (!appdata->about) {
               create_about_window();  
         }
         gtk_window_present((GtkWindow*)appdata->about);
 }
+

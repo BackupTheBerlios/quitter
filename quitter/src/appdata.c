@@ -21,11 +21,10 @@
 #include "prefs.h"
 
 APPDATA*
-new_appdata(GtkWidget *applet)
+new_appdata()
 {
         APPDATA *appdata = g_new(APPDATA, 1);
         appdata->username = NULL;
-        appdata->applet = applet;
         appdata->windowStats = NULL;
         appdata->windowPrefs = NULL;
         appdata->windowHabit = NULL;
@@ -52,3 +51,4 @@ free_appdata(APPDATA *appdata)
         g_free(appdata);
         appdata = NULL;
 }
+

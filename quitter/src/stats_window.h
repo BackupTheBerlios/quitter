@@ -24,7 +24,7 @@
 #include "prefs.h"
 
 void
-create_stats_window();
+init_stats_window ();
 
 void
 on_stats_destroy (GtkObject *object, 
@@ -54,5 +54,17 @@ on_stats_select_habit(GtkTreeSelection *selection,
 gchar* 
 print_clean_time(struct tm cur_tm, 
         struct tm quittime);
+        
+void
+start_timer ();
+
+gboolean
+on_stats_window_delete(GtkWidget *widget,
+        GdkEvent *event,
+        gpointer user_data);
+        
+void
+on_stats_window_close(GtkButton *button,
+        gpointer user_data);
         
 #endif

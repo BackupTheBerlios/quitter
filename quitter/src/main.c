@@ -23,48 +23,40 @@
 
 #include <string.h>
 #include <gtk/gtk.h>
+#include <gtk/gtklabel.h>
 #ifndef __WIN32__
 #include <panel-applet.h>
+#include "quitterapplet.h"
+#else
+#include "stats_window.h"
+#include <windows.h>
+#include <winuser.h>
+#include <gdk/gdkwin32.h>
+#include "MinimizeToTray.h"
 #endif
-#include <gtk/gtklabel.h>
 
 #include "interface.h"
 #include "support.h"
-#include "quitterapplet.h"
+#include "appdata.h"
 
 #ifndef __WIN32__
 PANEL_APPLET_BONOBO_FACTORY ("OAFIID:QuitterApplet_Factory",
 			     PANEL_TYPE_APPLET,
 			     "QuitterApplet", "0", quitter_applet_fill, NULL);
 #else
-GtkWidget* main_window;
-
-static gboolean delete_event( GtkWidget *widget,
-                              GdkEvent  *event,
-                              gpointer   data )
-{
-   return FALSE;
-}
-
-static void destroy( GtkWidget *widget,
-                     gpointer   data )
-{
-    gtk_main_quit ();
-}
-
 int main(int argc, char *argv[])
 {
         gtk_init (&argc, &argv);
-        
-        main_window = create_windowMain ();
-        g_signal_connect (G_OBJECT (main_window), "delete_event",
-                G_CALLBACK (delete_event), NULL);
-        g_signal_connect (G_OBJECT (main_window), "destroy",
-                G_CALLBACK (destroy), NULL);
-        quitter_applet_fill_contents (main_window);
-        gtk_widget_show (main_window);
-        
+        appdata = new_appdata ();
+        appdata->windowStats = create_windowStats ();
+        appdata->main_window = appdata->windowStats;
+        GtkTooltips *tooltips = gtk_tooltips_new ();
+        gtk_tooltips_set_tip (GTK_TOOLTIPS (tooltips), 
+                GTK_WIDGET (appdata->main_window), "Quitter", "Quitter");
+        init_stats_window ();
+        MinimizeWndToTray (GDK_WINDOW_HWND (appdata->main_window->window));
         gtk_main();
         return 0;
 }        
 #endif
+

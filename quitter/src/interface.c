@@ -701,18 +701,3 @@ create_windowEditHabit (void)
   return windowEditHabit;
 }
 
-GtkWidget*
-create_windowMain (void)
-{
-  GtkWidget *windowMain;
-
-  windowMain = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_widget_set_name (windowMain, "windowMain");
-  gtk_window_set_title (GTK_WINDOW (windowMain), "Quitter");
-
-  /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (windowMain, windowMain, "windowMain");
-
-  return windowMain;
-}
-

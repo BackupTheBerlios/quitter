@@ -28,10 +28,8 @@
 #define STATS_COLUMN_DATA 1
 
 void
-create_stats_window()
+init_stats_window ()
 {
-        appdata->windowStats = create_windowStats ();
-
         GtkLabel* labelUserValue = (GtkLabel*)lookup_widget(
                 appdata->windowStats,
                 "labelUserValue");
@@ -76,6 +74,7 @@ create_stats_window()
                         STATS_COLUMN_DATA, habit,
                         -1);
         }
+                
         gtk_widget_show_all (appdata->windowStats);
                 
         gboolean more = FALSE;
@@ -105,14 +104,14 @@ create_stats_window()
                 
         g_signal_connect (G_OBJECT (appdata->windowStats),
                 "delete-event", 
-                G_CALLBACK (on_window_delete), 
+                G_CALLBACK (on_stats_window_delete), 
                 NULL);
                 
         GtkWidget* closebutton = lookup_widget (appdata->windowStats,
                 "buttonClose");
         g_signal_connect (G_OBJECT (closebutton), 
                 "clicked",
-                G_CALLBACK (on_window_close),
+                G_CALLBACK (on_stats_window_close),
                 appdata->windowStats);
 
         move_window_to_last_position(appdata->windowStats, 
@@ -180,12 +179,12 @@ update_stats ()
         gchar *clean_from_habit = g_strdup_printf ("%s: %s",
                 habit->name, cleantime);
         g_free (cleantime), cleantime = NULL;
-
+        
         // show clean time as the applet icons tooltip 
         GtkTooltipsData* tooltips = 
-                gtk_tooltips_data_get(GTK_WIDGET (appdata->applet));
+                gtk_tooltips_data_get(GTK_WIDGET (appdata->main_window));
         if (tooltips->tip_text) {
-               g_free(tooltips->tip_text);
+                g_free(tooltips->tip_text);
         }
         tooltips->tip_text = g_strdup (clean_from_habit);
         
@@ -337,3 +336,34 @@ print_clean_time(struct tm cur_tm,
                         months, days, hours, minutes);
         }
 }
+
+void
+start_timer ()
+{
+        g_timeout_add (1000 * 60, on_update_stats, NULL);
+        update_stats ();
+}
+
+gboolean
+on_stats_window_delete(GtkWidget *widget,
+        GdkEvent *event,
+        gpointer user_data)
+{
+#ifndef __WIN32__
+        on_window_delete (widget, event, user_data);
+#else
+        // TODO: CLOSE APP
+#endif
+}
+
+void
+on_stats_window_close(GtkButton *button,
+        gpointer user_data)
+{
+#ifndef __WIN32__
+        on_window_close (button, user_data);
+#else
+        // TODO: CLOSE APP
+#endif
+}
+

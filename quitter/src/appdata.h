@@ -29,7 +29,7 @@ typedef struct _APPDATA APPDATA;
 struct _APPDATA
 {
         gchar* username;
-        GtkWidget *applet;
+        GtkWidget *main_window;
         GtkWidget *windowStats;
         GtkWidget *windowPrefs;
         GtkWidget *windowHabit;
@@ -40,7 +40,7 @@ struct _APPDATA
 APPDATA* appdata;
 
 APPDATA*
-new_appdata(GtkWidget *applet);
+new_appdata();
 
 void
 free_appdata(APPDATA* appdata);
