@@ -23,13 +23,17 @@
 
 #include <string.h>
 #include <gtk/gtk.h>
+#ifndef __WIN32__
 #include <panel-applet.h>
+#endif
 #include <gtk/gtklabel.h>
 
 #include "interface.h"
 #include "support.h"
 #include "quitterapplet.h"
 
+#ifndef __WIN32__
 PANEL_APPLET_BONOBO_FACTORY ("OAFIID:QuitterApplet_Factory",
 			     PANEL_TYPE_APPLET,
 			     "QuitterApplet", "0", quitter_applet_fill, NULL);
+#endif

@@ -19,21 +19,45 @@
 
 #include <string.h>
 #include <gtk/gtk.h>
+#ifndef __WIN32__
 #include <panel-applet.h>
+#endif
 #include <gtk/gtklabel.h>
 
+#ifndef __WIN32__
 gboolean
-quitter_applet_fill (PanelApplet * applet, const gchar * iid, gpointer data);
+quitter_applet_fill (GtkWidget *applet, 
+        const gchar * iid, 
+        gpointer data);
+#endif        
+
+void
+quitter_applet_fill_contents (GtkWidget *applet);
 
 gboolean
 on_button_press (GtkWidget * event_box,
-		 GdkEventButton * event, gpointer data);
+        GdkEventButton * event, 
+        gpointer data);
 
 void 
-on_applet_destroy (GtkObject * object, gpointer data);
+on_applet_destroy (GtkObject * object, 
+        gpointer data);
+
+#ifndef __WIN32__
+void
+menu_prefs_cb (BonoboUIComponent *ui, 
+        gpointer user_data, 
+        const char *cname );
 
 void
-menu_prefs_cb( BonoboUIComponent *ui, gpointer user_data, const char *cname );
+menu_about_cb (BonoboUIComponent *ui, 
+        gpointer user_data, 
+        const char *cname );
+#endif
 
 void
-menu_about_cb( BonoboUIComponent *ui, gpointer user_data, const char *cname );
+menu_show_prefs ();
+
+void
+menu_show_about ();
+

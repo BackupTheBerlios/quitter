@@ -21,13 +21,15 @@
 #define _APPDATA_H
 
 #include <gtk/gtk.h>
+#ifndef __WIN32__
 #include <panel-applet.h>
+#endif
 
 typedef struct _APPDATA APPDATA;
 struct _APPDATA
 {
         gchar* username;
-        PanelApplet *applet;
+        GtkWidget *applet;
         GtkWidget *windowStats;
         GtkWidget *windowPrefs;
         GtkWidget *windowHabit;
@@ -38,7 +40,7 @@ struct _APPDATA
 APPDATA* appdata;
 
 APPDATA*
-new_appdata(PanelApplet* applet);
+new_appdata(GtkWidget *applet);
 
 void
 free_appdata(APPDATA* appdata);

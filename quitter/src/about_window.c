@@ -21,7 +21,9 @@
 #include "support.h"
 #include "appdata.h"
 
+#ifndef __WIN32__
 #include <libgnomeui/libgnomeui.h>
+#endif
 
 void
 create_about_window()
@@ -30,6 +32,9 @@ create_about_window()
                 "Tanel Lebedev <tanel@ecoder.org>", 
                 "Janno Bergmann - graphics",
                 NULL};
+#ifdef __WIN32__
+        // TODO: windows stuff
+#else
         char* icon_file = gnome_program_locate_file(NULL,
                 GNOME_FILE_DOMAIN_PIXMAP,
                 "quitter.png",
@@ -49,6 +54,7 @@ create_about_window()
         if (icon) {
                 gdk_pixbuf_unref(icon);
         }
+#endif                
         g_signal_connect(appdata->about, 
                 "destroy",
                 G_CALLBACK(on_about_destroy),

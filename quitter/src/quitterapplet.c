@@ -17,7 +17,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifndef __WIN32__
 #include <libgnomeui/libgnomeui.h>
+#endif
 
 #include "quitterapplet.h"
 #include "appdata.h"
@@ -33,22 +35,43 @@ static const char quitter_menu_xml [] =
         "             pixtype=\"stock\" pixname=\"gnome-stock-about\"/>\n"
         "</popup>\n";
         
+#ifndef __WIN32__
 static const BonoboUIVerb quitter_menu_verbs [] = {
         BONOBO_UI_VERB ("Properties", menu_prefs_cb),
         BONOBO_UI_VERB ("About",      menu_about_cb),
         BONOBO_UI_VERB_END
-};       
+};
+#endif
 
+#ifndef __WIN32__
 gboolean
-quitter_applet_fill (PanelApplet * applet, const gchar * iid, gpointer data)
+quitter_applet_fill (GtkWidget *applet, const gchar * iid, gpointer data)
 {
-	if (strcmp (iid, "OAFIID:QuitterApplet") != 0)
+	if (strcmp (iid, "OAFIID:QuitterApplet") != 0) {
 		return FALSE;
+        }		
         
-        if (appdata) {
-                return TRUE;
-        }
+        if (! appdata) {
+                quitter_applet_fill_contents (applet);
+                panel_applet_setup_menu (PANEL_APPLET (applet),
+                                quitter_menu_xml,
+                                quitter_menu_verbs,
+                                NULL);
+                char* icon_file = gnome_program_locate_file(NULL,
+                                GNOME_FILE_DOMAIN_PIXMAP,
+                                "quitter.png",
+                                FALSE,
+                                NULL);
+                gnome_window_icon_set_default_from_file (icon_file);
+                g_free(icon_file), icon_file = NULL;
+        }        
+        return TRUE;
+}
+#endif
 
+void
+quitter_applet_fill_contents(GtkWidget *applet)
+{       
         GtkWidget *event_box = gtk_event_box_new ();
 	gtk_container_add (GTK_CONTAINER (applet), event_box);
 
@@ -65,11 +88,6 @@ quitter_applet_fill (PanelApplet * applet, const gchar * iid, gpointer data)
         
 	gtk_widget_show_all (GTK_WIDGET (applet));
         
-        panel_applet_setup_menu (PANEL_APPLET (applet),
-                                 quitter_menu_xml,
-                                 quitter_menu_verbs,
-                                 NULL);
-                                 
         GtkTooltips *tooltips = gtk_tooltips_new ();
         gtk_tooltips_set_tip (GTK_TOOLTIPS (tooltips), 
                 GTK_WIDGET (applet), "Quitter", "Quitter");
@@ -78,17 +96,7 @@ quitter_applet_fill (PanelApplet * applet, const gchar * iid, gpointer data)
         g_timeout_add(1000 * 60, // every minute
                 on_update_stats, NULL);
                 
-        char* icon_file = gnome_program_locate_file(NULL,
-                GNOME_FILE_DOMAIN_PIXMAP,
-                "quitter.png",
-                FALSE,
-                NULL);
-        gnome_window_icon_set_default_from_file (icon_file);
-        g_free(icon_file), icon_file = NULL;
-                
         update_stats ();
-        
-	return TRUE;
 }
 
 gboolean
@@ -111,15 +119,13 @@ on_applet_destroy (GtkObject * object, gpointer data)
         appdata = NULL;
 }
 
+#ifndef __WIN32__
 void
 menu_prefs_cb( BonoboUIComponent *ui, 
         gpointer user_data, 
         const char *cname )
 {
-        if (! appdata->windowPrefs) { 
-                create_prefs_window();
-        }
-        gtk_window_present((GtkWindow*)appdata->windowPrefs);
+        menu_show_prefs ();
 }
 
 void
@@ -127,8 +133,25 @@ menu_about_cb( BonoboUIComponent *ui,
         gpointer user_data, 
         const char *cname )
 {
+        menu_show_about ();
+}
+#endif
+
+void
+menu_show_prefs ()
+{
+        if (! appdata->windowPrefs) { 
+                create_prefs_window();
+        }
+        gtk_window_present((GtkWindow*)appdata->windowPrefs);
+}    
+
+void
+menu_show_about ()
+{
         if (!appdata->about) {
               create_about_window();  
         }
         gtk_window_present((GtkWindow*)appdata->about);
-}
+}        
+

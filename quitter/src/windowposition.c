@@ -24,6 +24,9 @@ move_window_to_last_position(GtkWidget* widget,
         gchar *GCONF_KEYX,
         gchar *GCONF_KEYY)
 {
+#ifdef __WIN32__
+        // TODO: windows stuff
+#else
         GConfClient* client = gconf_client_get_default();
         
         gchar* keyx = g_strdup_printf(GCONF_KEYX, gtk_widget_get_name(widget));
@@ -35,6 +38,7 @@ move_window_to_last_position(GtkWidget* widget,
         g_free(keyy);
 
         gtk_window_move((GtkWindow*)widget, x, y);
+#endif
 }
 
 void
@@ -46,6 +50,9 @@ save_window_position(GtkWidget* widget,
         int x = 0, y = 0;
         gtk_window_get_position(window, &x, &y);
         
+#ifdef __WIN32__
+        // TODO: windows stuff
+#else
         GConfClient* client = gconf_client_get_default();
         
         gchar* keyx = g_strdup_printf(GCONF_KEYX, gtk_widget_get_name(widget));
@@ -55,6 +62,7 @@ save_window_position(GtkWidget* widget,
         gchar* keyy = g_strdup_printf(GCONF_KEYY, gtk_widget_get_name(widget));
         gconf_client_set_int(client, keyy, y, NULL);
         g_free(keyy);
+#endif
 }
 
 void

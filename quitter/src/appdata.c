@@ -21,7 +21,7 @@
 #include "prefs.h"
 
 APPDATA*
-new_appdata(PanelApplet* applet)
+new_appdata(GtkWidget *applet)
 {
         APPDATA *appdata = g_new(APPDATA, 1);
         appdata->username = NULL;

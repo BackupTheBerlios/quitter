@@ -21,7 +21,9 @@
 #define _WINDOWPOSITION_H
 
 #include <gtk/gtk.h>
+#ifndef __WIN32__
 #include <gconf/gconf-client.h>
+#endif
 
 #define WINDOW_POSITIONX "/apps/quitter/window/%s/positionx"
 #define WINDOW_POSITIONY "/apps/quitter/window/%s/positiony"

@@ -23,7 +23,6 @@
 #include "stats_window.h"
 
 #include <glib.h>
-#include <libgnomeui/libgnomeui.h>
 
 void
 create_stats_window()
