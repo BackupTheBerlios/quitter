@@ -63,6 +63,7 @@ create_stats_window()
         gtk_tree_view_append_column (
                 GTK_TREE_VIEW (treeviewHabits), column);
                 
+        GtkTreeIter worst;
         int i;
         for (i = 0; i < appdata->habits->len; i++) {
                 HABIT* habit = g_ptr_array_index(appdata->habits, i);
@@ -72,20 +73,22 @@ create_stats_window()
                         0, habit->name,
                         1, habit,
                         -1);
+                if (habit->worst) {
+                        worst = iter;
+                }
         }
-                
         gtk_widget_show_all (appdata->windowStats);
                 
+        if (appdata->habits->len > 0) {
+                gtk_tree_selection_select_iter (selection, &worst);
+        }
+        
         if (appdata->habits->len < 2) {
-                GtkWidget *treeviewHabits = lookup_widget (appdata->windowStats, 
-                        "treeviewHabits");
-                gtk_widget_hide (treeviewHabits);
-                        
+                gtk_widget_hide (GTK_WIDGET (treeviewHabits));
                 GtkWidget *frameTotals = lookup_widget (appdata->windowStats,
                         "frameTotals");
                 gtk_widget_hide(frameTotals);
         }
-        
         
         g_signal_connect (G_OBJECT (appdata->windowStats),
                 "destroy", 
@@ -103,7 +106,7 @@ create_stats_window()
                 "clicked",
                 G_CALLBACK (on_window_close),
                 appdata->windowStats);
-                
+
         move_window_to_last_position(appdata->windowStats, 
                         WINDOW_POSITIONX, WINDOW_POSITIONY);
                 
@@ -114,6 +117,7 @@ void
 on_stats_destroy (GtkObject *object, 
         gpointer data)
 {
+        update_stats ();
         appdata->windowStats = NULL;
 }
 
@@ -127,22 +131,15 @@ HABIT *
 get_selected_habit ()
 {
         HABIT *habit = NULL;
-        if (appdata->habits->len > 1 && appdata->windowStats) {
-                GtkTreeView* treeviewHabits = (GtkTreeView*)lookup_widget (
-                        appdata->windowStats,
-                        "treeviewHabits");
-                GtkTreeSelection* selection = gtk_tree_view_get_selection (
-                        GTK_TREE_VIEW (treeviewHabits));
-                GtkTreeIter iter;
-                GtkTreeModel *model;
-                gboolean selected = gtk_tree_selection_get_selected (
-                        selection, &model, &iter);
-                if (selected) {
-                        gtk_tree_model_get (model, &iter, 1, &habit, -1);
-                }
-        }
-        if (! habit) {
-                habit = g_ptr_array_index(appdata->habits, 0);
+        GtkTreeView* treeviewHabits = (GtkTreeView*)lookup_widget (
+                appdata->windowStats,
+                "treeviewHabits");
+        GtkTreeSelection* selection = gtk_tree_view_get_selection (
+                GTK_TREE_VIEW (treeviewHabits));
+        GtkTreeIter iter;
+        GtkTreeModel *model;
+        if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
+                gtk_tree_model_get (model, &iter, 1, &habit, -1);
         }
         return habit;
 }
@@ -158,9 +155,23 @@ update_stats ()
         tzset();
         struct tm cur_tm = *localtime(&now);
 
-        HABIT *habit = get_selected_habit ();
+        HABIT *habit = NULL;
+        if (appdata->windowStats) {
+                if (GTK_WIDGET_VISIBLE (appdata->windowStats)) {
+                        habit = get_selected_habit ();
+                }
+        }
+        if (NULL == habit) {
+                habit = get_worst_habit ();
+        }
+        if (NULL == habit) {
+                habit = g_ptr_array_index(appdata->habits, 0);
+        }
 
-        gchar* cleantime = print_clean_time(cur_tm, habit->quittime);
+        gchar *cleantime = print_clean_time (cur_tm, habit->quittime);
+        gchar *clean_from_habit = g_strdup_printf ("%s: %s",
+                habit->name, cleantime);
+        g_free (cleantime), cleantime = NULL;
 
         // show clean time as the applet icons tooltip 
         GtkTooltipsData* tooltips = 
@@ -168,16 +179,16 @@ update_stats ()
         if (tooltips->tip_text) {
                g_free(tooltips->tip_text);
         }
-        tooltips->tip_text = g_strdup(cleantime);
+        tooltips->tip_text = g_strdup (clean_from_habit);
         
         // show clean time in statistics window
         if (appdata->windowStats) {
                 GtkLabel* labelCleanValue = (GtkLabel*)lookup_widget(
                         appdata->windowStats, "labelCleanValue");
-                gtk_label_set_text(labelCleanValue, cleantime);
+                gtk_label_set_text (labelCleanValue, clean_from_habit);
         }
         
-        g_free(cleantime), cleantime = NULL;
+        g_free (clean_from_habit), clean_from_habit = NULL;
         
         if (appdata->windowStats) {
                 // show details in statistics window
@@ -273,7 +284,7 @@ on_stats_select_habit(GtkTreeSelection *selection,
 }
 
 gchar* 
-print_clean_time(struct tm cur_tm,
+print_clean_time(struct tm cur_tm, 
         struct tm quittime)
 {
         int minutes = cur_tm.tm_min - quittime.tm_min;
@@ -318,4 +329,3 @@ print_clean_time(struct tm cur_tm,
                         months, days, hours, minutes);
         }
 }
-

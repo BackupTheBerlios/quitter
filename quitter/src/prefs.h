@@ -36,6 +36,7 @@ struct _HABIT
         int units_per_day;
         float price_per_pack;
         int units_per_pack;
+        gboolean worst;
 };
 
 void 
@@ -82,5 +83,8 @@ free_habit (HABIT *habit);
 
 gchar *
 get_prefs_file ();
+
+HABIT *
+get_worst_habit ();
 
 #endif

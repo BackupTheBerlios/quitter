@@ -81,6 +81,7 @@ xml_read_habits(xmlNode *root,
                         continue;
                 }
                 HABIT* habit = g_new(HABIT, 1);
+                habit->worst = FALSE;
                 xml_read_habit(node, habit);
                 g_ptr_array_add(habits, habit);
         }
@@ -93,6 +94,13 @@ xml_read_habit(xmlNode *root,
         xmlChar* name = xmlGetProp(root, "name");
         habit->name = g_strdup(name);
         xmlFree(name);
+        
+        xmlChar* worst = xmlGetProp (root, "worst");
+        if (worst) {
+                habit->worst = !strcmp (worst, "true");
+                xmlFree (worst);
+        }
+        
         xmlNode *node = NULL;
         for (node = root->children; node; node = node->next) {
                 if (! strcmp(node->name, "quittime")) {
@@ -151,6 +159,8 @@ write_prefs(APPDATA *app)
                 HABIT* habit = g_ptr_array_index(app->habits, i);
                 xmlTextWriterStartElement(writer, "habit");
                 xmlTextWriterWriteAttribute(writer, "name", habit->name);
+                xmlTextWriterWriteAttribute (writer, "worst", 
+                        habit->worst ? "true" : "false");
                 xmlTextWriterStartElement(writer, "quittime");
                 xml_write_int(writer, "day", habit->quittime.tm_mday);
                 xml_write_int(writer, "month", habit->quittime.tm_mon + 1);
@@ -207,6 +217,7 @@ new_habit()
         habit->units_per_day = 0;
         habit->price_per_pack = 0;
         habit->units_per_pack = 0;
+        habit->worst = FALSE;
         return habit;
 }
 
@@ -244,3 +255,15 @@ get_prefs_file ()
         return prefs_file;
 }
 
+HABIT *
+get_worst_habit ()
+{
+        int i;
+        for (i = 0; i < appdata->habits->len; i++) {
+                HABIT *habit = g_ptr_array_index (appdata->habits, i);
+                if (habit->worst) {
+                        return habit;
+                }
+        }
+        return NULL;
+}

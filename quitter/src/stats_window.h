@@ -52,7 +52,7 @@ on_stats_select_habit(GtkTreeSelection *selection,
         gpointer data);
         
 gchar* 
-print_clean_time(struct tm cur_tm,
+print_clean_time(struct tm cur_tm, 
         struct tm quittime);
         
 #endif

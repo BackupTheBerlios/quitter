@@ -24,6 +24,11 @@
 #include "interface.h"
 #include "support.h"
 
+#define PREFS_COLUMN_NAME 0
+#define PREFS_COLUMN_QUITTIME 1
+#define PREFS_COLUMN_WORST 2
+#define PREFS_COLUMN_DATA 3
+
 void 
 create_prefs_window()
 {
@@ -55,8 +60,8 @@ create_prefs_window()
                 appdata->windowPrefs, 
                 "treeviewHabits");
                 
-        GtkListStore *habits_store = gtk_list_store_new (
-                3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER);
+        GtkListStore *habits_store = gtk_list_store_new (4, G_TYPE_STRING, 
+                G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_POINTER);
         gtk_tree_view_set_model (treeviewHabits, 
                 GTK_TREE_MODEL (habits_store));
         g_object_unref(habits_store);
@@ -73,28 +78,55 @@ create_prefs_window()
         
         GtkTreeViewColumn *column_name = 
                 gtk_tree_view_column_new_with_attributes (
-                "Name", renderer, "text", 0, NULL);
+                        "Name", renderer, "text", 
+                        PREFS_COLUMN_NAME, NULL);
         gtk_tree_view_append_column (
                 GTK_TREE_VIEW (treeviewHabits), column_name);
 
         GtkTreeViewColumn *column_quittime = 
                 gtk_tree_view_column_new_with_attributes (
-                "Quit time", renderer, "text", 1, NULL);
+                        "Quit time", renderer, "text", 
+                        PREFS_COLUMN_QUITTIME, NULL);
         gtk_tree_view_append_column (
                 GTK_TREE_VIEW (treeviewHabits), column_quittime);
+                
+        GtkCellRenderer *toggle_renderer = gtk_cell_renderer_toggle_new ();
+        gtk_cell_renderer_toggle_set_radio (
+                GTK_CELL_RENDERER_TOGGLE (toggle_renderer), TRUE);
+        g_signal_connect (G_OBJECT (toggle_renderer),
+                "toggled", 
+                G_CALLBACK (on_worst_toggled), 
+                treeviewHabits);
+        
+        GtkTreeViewColumn *column_worst =
+                gtk_tree_view_column_new_with_attributes (
+                        "Worst habit", toggle_renderer, "active", 
+                        PREFS_COLUMN_WORST, NULL);
+        gtk_tree_view_append_column (
+                GTK_TREE_VIEW (treeviewHabits), column_worst);
 
+        HABIT *worst_habit = NULL;
         int i;
         for (i = 0; i < appdata->habits->len; i++) {
                 HABIT* habit = g_ptr_array_index(appdata->habits, i);
                 GtkTreeIter iter;
                 gtk_list_store_append (habits_store, &iter);
                 gtk_list_store_set (habits_store, &iter, 
-                        0, habit->name,
-                        1, print_quittime(habit),
-                        2, habit,
+                        PREFS_COLUMN_NAME, habit->name,
+                        PREFS_COLUMN_QUITTIME, print_quittime(habit),
+                        PREFS_COLUMN_WORST, FALSE,
+                        PREFS_COLUMN_DATA, habit,
                         -1);
+                if (habit->worst) {
+                        worst_habit = habit;
+                }
         }
-                
+
+        if (! worst_habit && appdata->habits->len > 0) {
+                worst_habit = g_ptr_array_index (appdata->habits, 0);
+        }
+        update_worst_habit_selection (treeviewHabits, worst_habit);
+        
         GtkWidget* buttonRemoveHabit = lookup_widget (
                 appdata->windowPrefs,
                 "buttonRemoveHabit");
@@ -159,7 +191,10 @@ on_prefs_destroy (GtkObject *object,
                         more_items = gtk_tree_model_iter_next(model, &iter)) {
                 HABIT *habit = NULL;
                 gchar *quittime = NULL;
-                gtk_tree_model_get (model, &iter, 1, &quittime, 2, &habit, -1);
+                gtk_tree_model_get (model, &iter, 
+                                PREFS_COLUMN_QUITTIME, &quittime, 
+                                PREFS_COLUMN_DATA, &habit, 
+                                -1);
                 if (is_user_added_habit(appdata, habit)) {
                         free_habit(habit);
                 }
@@ -193,11 +228,14 @@ on_apply_prefs(GtkButton *button,
         more_items;
         more_items = gtk_tree_model_iter_next(model, &iter)) {
                 HABIT *habit = NULL;
-                gtk_tree_model_get (model, &iter, 2, &habit, -1);
+                gtk_tree_model_get (model, &iter, 
+                        PREFS_COLUMN_DATA, &habit, 
+                        -1);
                 if (is_user_added_habit(appdata, habit)) {
                         g_ptr_array_add(appdata->habits, habit);
                 }
         }
+        
         GPtrArray *deleted_items = g_ptr_array_new();
         int i;
         for (i = 0; i < appdata->habits->len; i++) {
@@ -207,7 +245,9 @@ on_apply_prefs(GtkButton *button,
                 more_items;
                 more_items = gtk_tree_model_iter_next(model, &iter)) {
                         HABIT *item = NULL;
-                        gtk_tree_model_get (model, &iter, 2, &item, -1);
+                        gtk_tree_model_get (model, &iter, 
+                                PREFS_COLUMN_DATA, &item, 
+                                -1);
                         if (item == habit) {
                                 is_deleted = FALSE;
                                 break;
@@ -223,6 +263,9 @@ on_apply_prefs(GtkButton *button,
                 free_habit(habit);
         }
         g_ptr_array_free(deleted_items, FALSE);
+        
+        update_stats ();
+        
         write_prefs(appdata);
         on_window_close(button, appdata->windowPrefs);
 }
@@ -236,12 +279,18 @@ on_add_habit(GtkButton *button,
                 habits_list);
         HABIT *habit = new_habit();
         GtkTreeIter iter;
+        gboolean is_first = ! gtk_tree_model_get_iter_first (
+                GTK_TREE_MODEL (store), &iter);
         gtk_list_store_append (store, &iter);
         gtk_list_store_set (store, &iter, 
-                0, habit->name,
-                1, print_quittime(habit),
-                2, habit,
+                PREFS_COLUMN_NAME, habit->name,
+                PREFS_COLUMN_QUITTIME, print_quittime(habit),
+                PREFS_COLUMN_WORST, FALSE,
+                PREFS_COLUMN_DATA, habit,
                 -1);
+        if (is_first) {
+                update_worst_habit_selection (habits_list, habit);
+        }
 }
 
 void
@@ -256,12 +305,21 @@ on_remove_habit(GtkButton *button,
         if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
                 HABIT *habit = NULL;
                 gchar *quittime = NULL;
-                gtk_tree_model_get (model, &iter, 1, &quittime, 2, &habit, -1);
+                gtk_tree_model_get (model, &iter, 
+                        PREFS_COLUMN_QUITTIME, &quittime, 
+                        PREFS_COLUMN_DATA, &habit, 
+                        -1);
                 if (is_user_added_habit(appdata, habit)) {
                         free_habit(habit);
                 }
                 g_free(quittime);
                 gtk_list_store_remove (GTK_LIST_STORE(model), &iter);
+        }
+        
+        if (gtk_tree_model_get_iter_first (model, &iter)) {
+                HABIT *habit = NULL;
+                gtk_tree_model_get (model, &iter, PREFS_COLUMN_DATA, &habit, -1);
+                update_worst_habit_selection (treeviewHabits, habit);
         }
 }
 
@@ -280,7 +338,9 @@ on_edit_habit(GtkButton *button,
                         return;
                 }
                 HABIT *habit = NULL;
-                gtk_tree_model_get (model, &iter, 2, &habit, -1);
+                gtk_tree_model_get (model, &iter, 
+                        PREFS_COLUMN_DATA, &habit, 
+                        -1);
                 create_edit_window(habit);
         }
         gtk_window_present((GtkWindow *)appdata->windowHabit);
@@ -305,19 +365,57 @@ update_selected_habit ()
                 GTK_TREE_VIEW (treeviewHabits));
         GtkTreeIter iter;
         GtkTreeModel *model = NULL;
-        if (! gtk_tree_selection_get_selected (selection, 
-                        &model, &iter)) {
+        if (! gtk_tree_selection_get_selected (selection, &model, &iter)) {
                 return;
         }
         HABIT *habit = NULL;
         gchar *quittime = NULL;
-        gtk_tree_model_get (model, &iter, 1, &quittime, 2, &habit, -1);
+        gtk_tree_model_get (model, &iter, 
+                PREFS_COLUMN_QUITTIME, &quittime, 
+                PREFS_COLUMN_DATA, &habit, 
+                -1);
         g_free(quittime), quittime = NULL;
         GtkListStore *store = (GtkListStore *) gtk_tree_view_get_model (
                 treeviewHabits);
         gtk_list_store_set (store, &iter, 
-                0, habit->name,
-                1, print_quittime (habit),
-                2, habit,
+                PREFS_COLUMN_NAME, habit->name,
+                PREFS_COLUMN_QUITTIME, print_quittime (habit),
+                PREFS_COLUMN_WORST, habit->worst,
+                PREFS_COLUMN_DATA, habit,
                 -1);
+}
+
+void
+on_worst_toggled (GtkCellRendererToggle *cellrenderertoggle,
+        gchar *arg1,
+        gpointer user_data)
+{
+        GtkTreeView *treeviewHabits = GTK_TREE_VIEW (user_data);
+        GtkTreeModel *model = gtk_tree_view_get_model(treeviewHabits);
+        GtkTreeIter iter;
+        GtkTreeSelection* selection = gtk_tree_view_get_selection (
+                GTK_TREE_VIEW (user_data));
+        HABIT *habit = NULL;
+        if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
+                gtk_tree_model_get (model, &iter, PREFS_COLUMN_DATA, &habit, -1);
+                update_worst_habit_selection (treeviewHabits, habit);
+        }
+}
+
+void
+update_worst_habit_selection (GtkTreeView *treeview,
+        HABIT *new_selection)
+{
+        GtkTreeModel *model = gtk_tree_view_get_model (treeview);
+        GtkTreeIter iter;
+        gboolean more_items; 
+        for(more_items = gtk_tree_model_get_iter_first (model, &iter); 
+                        more_items;
+                        more_items = gtk_tree_model_iter_next (model, &iter)) {
+                HABIT *habit = NULL;
+                gtk_tree_model_get (model, &iter, PREFS_COLUMN_DATA, &habit, -1);
+                habit->worst = (habit == new_selection);
+                gtk_list_store_set (GTK_LIST_STORE (model), &iter,
+                        PREFS_COLUMN_WORST, habit->worst, -1);
+        }
 }

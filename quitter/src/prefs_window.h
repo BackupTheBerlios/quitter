@@ -58,4 +58,13 @@ print_quittime(HABIT *habit);
 void
 update_selected_habit ();
 
+void
+on_worst_toggled (GtkCellRendererToggle *cellrenderertoggle,
+        gchar *arg1,
+        gpointer user_data);
+        
+void
+update_worst_habit_selection (GtkTreeView *treeview,
+        HABIT *new_selection);
+        
 #endif
