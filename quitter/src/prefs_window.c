@@ -419,3 +419,13 @@ update_worst_habit_selection (GtkTreeView *treeview,
                         PREFS_COLUMN_WORST, habit->worst, -1);
         }
 }
+
+void
+show_prefs_window ()
+{
+        if (! appdata->windowPrefs) { 
+                create_prefs_window();
+        }
+        gtk_window_present((GtkWindow*)appdata->windowPrefs);
+}        
+

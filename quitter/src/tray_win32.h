@@ -17,20 +17,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef _ABOUT_WINDOW_H
-#define _ABOUT_WINDOW_H
+#ifndef _TRAY_WIN32_H
+#define _TRAY_WIN32_H
 
-#include <glib.h>
-#include <gtk/gtk.h>
-
-void
-create_about_window();
-
-void
-on_about_destroy (GtkObject *object, 
-        gpointer data);
-        
-void
-show_about_window ();
+void create_tray_icon();
 
 #endif

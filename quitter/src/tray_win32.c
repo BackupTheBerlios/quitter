@@ -24,23 +24,26 @@
 #include <windows.h>
 #include <gdk/gdkwin32.h>
 #include <gdk/gdk.h>
+
+#include "resource.h"
+#include "tray_win32.h"
+
+#include "stats_window.h"
  
 #define WM_TRAYMESSAGE WM_USER /* User defined WM Message */
 
-static NOTIFYICONDATA wgaim_nid;
+static NOTIFYICONDATA quitter_nid;
 HINSTANCE exe_hInstance = 0;
 static HWND systray_hwnd=0;
-
-static void systray_remove_nid(void) {
-	Shell_NotifyIcon(NIM_DELETE,&wgaim_nid);
-}
+static HICON sysicon=0;
 
 void
-docklet_clicked(int button_type)
+on_tray_icon_clicked(int button_type)
 {
+        printf("tray icon clicked\n");
 	switch (button_type) {
 		case 1:
-                        // TODO: raise main window
+                        show_stats_window ();
 			break;
 		case 3:
 			// TODO: show menu
@@ -71,14 +74,14 @@ static LRESULT CALLBACK systray_mainmsg_handler(HWND hwnd, UINT msg, WPARAM wpar
 		else
 			break;
 
-		docklet_clicked(type);
+		on_tray_icon_clicked (type);
 		break;
 	}
 	default: 
 		if (msg == taskbarRestartMsg) {
 			/* explorer crashed and left us hanging... 
 			   This will put the systray icon back in it's place, when it restarts */
-                        Shell_NotifyIcon(NIM_ADD,&wgaim_nid);
+                        Shell_NotifyIcon(NIM_ADD, &quitter_nid);
 		}
 		break;
 	}
@@ -87,6 +90,7 @@ static LRESULT CALLBACK systray_mainmsg_handler(HWND hwnd, UINT msg, WPARAM wpar
 
 static HWND systray_create_hiddenwin ()
 {
+        printf("create hidden window..\n");
 	WNDCLASSEX wcex;
 	TCHAR wname[32];
 	strcpy(wname, "Quitter");
@@ -112,38 +116,41 @@ static HWND systray_create_hiddenwin ()
                 GetDesktopWindow(), NULL, exe_hInstance, 0);
 }
 
-static void wgaim_tray_create() {
+static void systray_init_icon(HWND hWnd, HICON icon) {
+	char* locenc=NULL;
+	
+        ZeroMemory(&quitter_nid, sizeof(quitter_nid));
+	quitter_nid.cbSize=sizeof(NOTIFYICONDATA);
+	quitter_nid.hWnd=hWnd;
+	quitter_nid.uID=0;
+	quitter_nid.uFlags=NIF_ICON | NIF_MESSAGE | NIF_TIP;
+	quitter_nid.uCallbackMessage=WM_TRAYMESSAGE;
+	quitter_nid.hIcon=icon;
+	strcpy(quitter_nid.szTip, "test"); // TODO: display status
+	g_free(locenc);
+	Shell_NotifyIcon(NIM_ADD, &quitter_nid);
+}
+
+void create_tray_icon() {
 	/* dummy window to process systray messages */
 	systray_hwnd = systray_create_hiddenwin ();
 
-	// TODO: load icons, create icon in systray
+	/* Load icons, and init systray notify icon */
+	sysicon = (HICON)LoadImage(exe_hInstance, 
+                MAKEINTRESOURCE(QUITTER_ICON), IMAGE_ICON, 16, 16, 0);
+
+	/* Create icon in systray */
+	systray_init_icon(systray_hwnd, sysicon);
 }
 
-static void wgaim_tray_destroy() {
+static void systray_remove_nid(void) {
+	Shell_NotifyIcon(NIM_DELETE, &quitter_nid);
+}
+
+// TODO: where should this be called?
+static void quitter_tray_destroy() {
 	systray_remove_nid();
 	DestroyWindow(systray_hwnd);
 	// TODO: do stuff after tray icon is removed
-}
-
-void
-docklet_embedded()
-{
-        // TODO: update status
-}
-
-static void systray_init_icon(HWND hWnd, HICON icon) {
-	char* locenc=NULL;
-
-	ZeroMemory(&wgaim_nid,sizeof(wgaim_nid));
-	wgaim_nid.cbSize=sizeof(NOTIFYICONDATA);
-	wgaim_nid.hWnd=hWnd;
-	wgaim_nid.uID=0;
-	wgaim_nid.uFlags=NIF_ICON | NIF_MESSAGE | NIF_TIP;
-	wgaim_nid.uCallbackMessage=WM_TRAYMESSAGE;
-	wgaim_nid.hIcon=icon;
-	strcpy(wgaim_nid.szTip, "test"); // TODO: display status
-	g_free(locenc);
-	Shell_NotifyIcon(NIM_ADD,&wgaim_nid);
-	docklet_embedded();
 }
 

@@ -22,6 +22,14 @@
 #include "windowposition.h"
 #include "stats_window.h"
 
+#ifdef __WIN32__
+#include "tray_win32.h"
+#include <windows.h>
+#include <winuser.h>
+#include <gdk/gdkwin32.h>
+#include "MinimizeToTray.h"
+#endif
+
 #include <glib.h>
 
 #define STATS_COLUMN_NAME 0
@@ -118,6 +126,11 @@ init_stats_window ()
                         WINDOW_POSITIONX, WINDOW_POSITIONY);
                 
         update_stats ();
+        
+#ifdef __WIN32__
+        MinimizeWndToTray (GDK_WINDOW_HWND (appdata->main_window->window));
+        create_tray_icon ();
+#endif        
 }
 
 void
@@ -351,7 +364,7 @@ on_stats_window_delete(GtkWidget *widget,
 #ifndef __WIN32__
         return on_window_delete (widget, event, user_data);
 #else
-        // TODO: CLOSE APP
+        MinimizeWndToTray (GDK_WINDOW_HWND (appdata->main_window->window));
 #endif
 }
 
@@ -362,6 +375,17 @@ on_stats_window_close(GtkButton *button,
 #ifndef __WIN32__
         on_window_close (button, user_data);
 #else
-        // TODO: CLOSE APP
+        MinimizeWndToTray (GDK_WINDOW_HWND (appdata->main_window->window));
 #endif
 }
+
+void
+show_stats_window ()
+{
+        if (! appdata->windowStats) { 
+                appdata->windowStats = create_windowStats ();
+                init_stats_window ();
+        }
+        gtk_window_present ((GtkWindow *) appdata->windowStats);
+}
+

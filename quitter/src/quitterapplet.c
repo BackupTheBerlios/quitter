@@ -101,11 +101,7 @@ on_button_press (GtkWidget * event_box, GdkEventButton * event, gpointer data)
 	if (1 != event->button) {
                 return FALSE;
         }
-        if (! appdata->windowStats) { 
-                appdata->windowStats = create_windowStats ();
-                init_stats_window ();
-        }
-        gtk_window_present ((GtkWindow *) appdata->windowStats);
+        show_stats_window ();
         return TRUE;        
 }
 
@@ -120,10 +116,7 @@ menu_prefs_cb( BonoboUIComponent *ui,
         gpointer user_data, 
         const char *cname )
 {
-        if (! appdata->windowPrefs) { 
-                create_prefs_window();
-        }
-        gtk_window_present((GtkWindow*)appdata->windowPrefs);
+        show_prefs_window ();
 }
 
 void
@@ -131,8 +124,6 @@ menu_about_cb( BonoboUIComponent *ui,
         gpointer user_data, 
         const char *cname )
 {
-        if (!appdata->about) {
-              create_about_window();  
-        }
-        gtk_window_present((GtkWindow*)appdata->about);
+        show_about_window ();
 }
+

@@ -29,10 +29,6 @@
 #include "quitterapplet.h"
 #else
 #include "stats_window.h"
-#include <windows.h>
-#include <winuser.h>
-#include <gdk/gdkwin32.h>
-#include "MinimizeToTray.h"
 #endif
 
 #include "interface.h"
@@ -54,7 +50,6 @@ int main(int argc, char *argv[])
         gtk_tooltips_set_tip (GTK_TOOLTIPS (tooltips), 
                 GTK_WIDGET (appdata->main_window), "Quitter", "Quitter");
         init_stats_window ();
-        MinimizeWndToTray (GDK_WINDOW_HWND (appdata->main_window->window));
         gtk_main();
         return 0;
 }        

@@ -1,7 +1,7 @@
 [Project]
 FileName=quitter-devcpp.dev
 Name=quitter
-UnitCount=25
+UnitCount=27
 Type=1
 Ver=1
 ObjFiles=
@@ -268,9 +268,9 @@ ProductVersion=
 AutoIncBuildNr=0
 
 [Unit26]
-FileName=src\MinimizeToTray.c
+FileName=src\tray_win32.h
 CompileCpp=0
-Folder=quitter
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -301,6 +301,16 @@ BuildCmd=
 FileName=src\tray_win32.c
 CompileCpp=0
 Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit27]
+FileName=src\resource.h
+CompileCpp=0
+Folder=quitter
 Compile=1
 Link=1
 Priority=1000

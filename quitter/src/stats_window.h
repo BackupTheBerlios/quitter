@@ -67,4 +67,7 @@ void
 on_stats_window_close(GtkButton *button,
         gpointer user_data);
         
+void
+show_stats_window ();
+        
 #endif

@@ -67,4 +67,7 @@ void
 update_worst_habit_selection (GtkTreeView *treeview,
         HABIT *new_selection);
         
+void
+show_prefs_window ();
+        
 #endif

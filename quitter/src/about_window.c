@@ -67,3 +67,12 @@ on_about_destroy (GtkObject *object,
 {
         appdata->about = NULL;
 }
+
+void
+show_about_window ()
+{
+        if (!appdata->about) {
+              create_about_window();  
+        }
+        gtk_window_present((GtkWindow*)appdata->about);
+}

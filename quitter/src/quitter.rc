@@ -1,0 +1,4 @@
+#include "resource.h"
+
+QUITTER_ICON    ICON "../pixmaps/quitter.ico"
+
