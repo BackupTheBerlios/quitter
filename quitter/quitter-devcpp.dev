@@ -2,7 +2,7 @@
 FileName=quitter-devcpp.dev
 Name=quitter
 UnitCount=23
-Type=0
+Type=1
 Ver=1
 ObjFiles=
 Includes=C:\Dev-Cpp\lib\glib-2.0\include;C:\Dev-Cpp\lib\gtk-2.0\include;C:\Dev-Cpp\include\gtk-2.0;C:\Dev-Cpp\include\atk-1.0;C:\Dev-Cpp\include\glib-2.0;C:\Dev-Cpp\include\pango-1.0;"C:\Program Files\Common Files\GTK\2.0\include\libxml2"
@@ -10,7 +10,7 @@ Libs=
 PrivateResource=
 ResourceIncludes=
 MakeIncludes=
-Compiler=
+Compiler=-mms-bitfields_@@_
 CppCompiler=
 Linker=-LC:/PROGRA~1/COMMON~1/GTK/2.0/lib -lgtk-win32-2.0 -lgdk-win32-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -lpangowin32-1.0 -lgdi32 -lpango-1.0 -lgobject-2.0 -lgmodule-2.0 -llibxml2 -lglib-2.0 -lintl -liconv_@@_
 IsCpp=0
@@ -276,4 +276,14 @@ OriginalFilename=
 ProductName=
 ProductVersion=
 AutoIncBuildNr=0
+
+[Unit25]
+FileName=src\MinimizeToTray.h
+CompileCpp=0
+Folder=quitter
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
 

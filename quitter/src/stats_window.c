@@ -24,6 +24,9 @@
 
 #include <glib.h>
 
+#define STATS_COLUMN_NAME 0
+#define STATS_COLUMN_DATA 1
+
 void
 create_stats_window()
 {
@@ -63,26 +66,31 @@ create_stats_window()
         gtk_tree_view_append_column (
                 GTK_TREE_VIEW (treeviewHabits), column);
                 
-        GtkTreeIter worst;
         int i;
         for (i = 0; i < appdata->habits->len; i++) {
                 HABIT* habit = g_ptr_array_index(appdata->habits, i);
                 GtkTreeIter iter;
                 gtk_list_store_append (habits_store, &iter);
                 gtk_list_store_set (habits_store, &iter, 
-                        0, habit->name,
-                        1, habit,
+                        STATS_COLUMN_NAME, habit->name,
+                        STATS_COLUMN_DATA, habit,
                         -1);
-                if (habit->worst) {
-                        worst = iter;
-                }
         }
         gtk_widget_show_all (appdata->windowStats);
                 
-        if (appdata->habits->len > 0) {
-                gtk_tree_selection_select_iter (selection, &worst);
-        }
-        
+        gboolean more = FALSE;
+        GtkTreeIter iter;
+        GtkTreeModel *model = gtk_tree_view_get_model (treeviewHabits);
+        for (more = gtk_tree_model_get_iter_first (model, &iter); 
+                        more; more = gtk_tree_model_iter_next(model, &iter)) {
+                HABIT *habit = NULL;
+                gtk_tree_model_get (model, &iter, STATS_COLUMN_DATA, &habit, -1);
+                if (habit->worst) {
+                        gtk_tree_selection_select_iter (selection, &iter);
+                        break;
+                }        
+        }        
+
         if (appdata->habits->len < 2) {
                 gtk_widget_hide (GTK_WIDGET (treeviewHabits));
                 GtkWidget *frameTotals = lookup_widget (appdata->windowStats,
@@ -139,7 +147,7 @@ get_selected_habit ()
         GtkTreeIter iter;
         GtkTreeModel *model;
         if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
-                gtk_tree_model_get (model, &iter, 1, &habit, -1);
+                gtk_tree_model_get (model, &iter, STATS_COLUMN_DATA, &habit, -1);
         }
         return habit;
 }

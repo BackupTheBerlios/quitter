@@ -125,6 +125,7 @@ on_button_press (GtkWidget * event_box, GdkEventButton * event, gpointer data)
                 create_stats_window();
         }
         gtk_window_present ((GtkWindow *) appdata->windowStats);
+        
         return TRUE;        
 }
 
