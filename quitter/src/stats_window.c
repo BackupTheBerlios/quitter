@@ -54,7 +54,6 @@ show_stats_user_data ()
         gchar* username = g_strdup_printf(
                 "<span size=\"large\">%s</span>", 
                 appdata->username);
-        // todo: will this leak? have no clue..
         gtk_label_set_markup (labelUserValue, username);
         g_free(username);
         
@@ -381,13 +380,28 @@ print_clean_time(struct tm cur_tm,
 	        cur_tm.tm_year--;
 	        months += 12;
         }
-        if (weeks > 0) {
-                return g_strdup_printf("%dM %dW %dD %dh %dm", 
-                        months, weeks, days, hours, minutes);
+        
+        int yearspassed = cur_tm.tm_year - quittime.tm_year;
+        gchar *stryears;
+        if (yearspassed > 0) {
+                stryears = g_strdup_printf("%dY ", yearspassed);
         } else {
-                return g_strdup_printf("%dM %dD %dh %dm", 
-                        months, days, hours, minutes);
+                stryears = g_strdup("");
         }
+        
+        gchar *strweeks;
+        if (weeks > 0) {
+                strweeks = g_strdup_printf("%dW ", weeks);
+        } else {
+                strweeks = g_strdup("");
+        }
+        
+        gchar *result = g_strdup_printf("%s%dM %s%dD %dh %dm",
+                stryears, months, strweeks, days, hours, minutes);
+        g_free(stryears);
+        g_free(strweeks);
+
+        return result;
 }
 
 void
