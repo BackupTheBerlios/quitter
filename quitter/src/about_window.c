@@ -20,7 +20,8 @@
 #include "about_window.h"
 #include "support.h"
 #include "appdata.h"
-
+#include "interface.h"
+#include "windowposition.h"
 #ifndef __WIN32__
 #include <libgnomeui/libgnomeui.h>
 #endif
@@ -32,33 +33,80 @@ create_about_window()
                 "Tanel Lebedev <tanel@ecoder.org>", 
                 "Janno Bergmann - graphics",
                 NULL};
-#ifdef __WIN32__
-        // TODO: windows stuff
-#else
-        char* icon_file = gnome_program_locate_file(NULL,
+        const gchar *caption = "Quitter - a quit meter applet";
+        const gchar *copyright = "Copyright \xc2\xa9 2004 Tanel Lebedev";
+        const gchar *description =
+                "Quitter helps you kick all sorts of nasty habits.";
+
+        char* icon_file = NULL;
+#ifndef __WIN32__        
+        icon_file = gnome_program_locate_file(NULL,
                 GNOME_FILE_DOMAIN_PIXMAP,
                 "quitter.png",
                 FALSE,
                 NULL);
+#else
+        icon_file = "pixmaps\\quitter.png";
+#endif
+
         GError *error = NULL;
         GdkPixbuf *icon = gdk_pixbuf_new_from_file(icon_file, &error);
         g_free(icon_file), icon_file = NULL;
-        appdata->about = gnome_about_new("Quitter - a quit meter applet",
+
+#ifdef __WIN32__
+        appdata->about = create_windowAbout ();
+        GtkImage *imageLogo = (GtkImage *)lookup_widget(appdata->about,
+                "imageLogo");
+        gtk_image_set_from_pixbuf (imageLogo, icon);
+
+        gchar *captionFormatted = g_strdup_printf ("<b><big>%s</big></b>", caption);
+        GtkLabel* labelCaption = (GtkLabel *)lookup_widget (appdata->about, 
+                "labelCaption");
+        gtk_label_set_markup (labelCaption, captionFormatted);
+        g_free (captionFormatted), captionFormatted = NULL;
+        
+        GtkLabel* labelCopyright = (GtkLabel *)lookup_widget (appdata->about, 
+                "labelCopyright");
+        gtk_label_set_text (labelCopyright, copyright);
+
+        GtkLabel* labelDescription = (GtkLabel *)lookup_widget (appdata->about, 
+                "labelDescription");
+        gtk_label_set_text (labelDescription, description);
+#else
+        appdata->about = gnome_about_new(caption,
                 VERSION,
-                "Copyright \xc2\xa9 2004 Tanel Lebedev",
-                "Quitter helps you kick all sorts of nasty habits.",
+                copyright,
+                description,
                 authors,
                 NULL,
                 NULL,
                 icon);
+#endif
+
         if (icon) {
                 gdk_pixbuf_unref(icon);
         }
-#endif                
+
         g_signal_connect(appdata->about, 
                 "destroy",
                 G_CALLBACK(on_about_destroy),
                 NULL);
+                
+#ifdef __WIN32__                
+        g_signal_connect (G_OBJECT (appdata->about),
+                "delete-event", 
+                G_CALLBACK (on_window_delete), 
+                NULL);
+                
+        GtkWidget* closebutton = lookup_widget (appdata->about, 
+                "buttonClose");
+        g_signal_connect (G_OBJECT (closebutton), 
+                "clicked",
+                G_CALLBACK (on_window_close),
+                appdata->about);
+#endif                
+                
+        gtk_widget_show_all (appdata->about);
 }
 
 void

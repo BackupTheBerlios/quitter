@@ -2,3 +2,10 @@
 
 IDI_TRAYICON            ICON    DISCARDABLE     "pixmaps\\quitter.ico"
 
+IDR_POPUPMENU           MENU    DISCARDABLE 
+BEGIN
+    MENUITEM "&Properties",                 ID_PROPERTIES
+    MENUITEM "&About",                      ID_ABOUT
+    MENUITEM "&Close",                      ID_CLOSE
+END
+

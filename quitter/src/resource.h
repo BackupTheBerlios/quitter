@@ -21,5 +21,9 @@
 #define _RESOURCE_H
 
 #define IDI_TRAYICON                    101
+#define IDR_POPUPMENU                   102
+#define ID_PROPERTIES                   40001
+#define ID_ABOUT                        40002
+#define ID_CLOSE                        40003
 
 #endif

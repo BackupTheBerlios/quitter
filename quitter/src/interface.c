@@ -701,3 +701,99 @@ create_windowEditHabit (void)
   return windowEditHabit;
 }
 
+GtkWidget*
+create_windowAbout (void)
+{
+  GtkWidget *windowAbout;
+  GtkWidget *vboxContents;
+  GtkWidget *hbox5;
+  GtkWidget *vbox10;
+  GtkWidget *labelCaption;
+  GtkWidget *hbox6;
+  GtkWidget *imageLogo;
+  GtkWidget *vboxDescription;
+  GtkWidget *labelCopyright;
+  GtkWidget *labelDescription;
+  GtkWidget *hbuttonbox5;
+  GtkWidget *buttonClose;
+
+  windowAbout = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_widget_set_name (windowAbout, "windowAbout");
+  gtk_window_set_title (GTK_WINDOW (windowAbout), "About");
+  gtk_window_set_resizable (GTK_WINDOW (windowAbout), FALSE);
+
+  vboxContents = gtk_vbox_new (FALSE, 5);
+  gtk_widget_set_name (vboxContents, "vboxContents");
+  gtk_widget_show (vboxContents);
+  gtk_container_add (GTK_CONTAINER (windowAbout), vboxContents);
+
+  hbox5 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_set_name (hbox5, "hbox5");
+  gtk_widget_show (hbox5);
+  gtk_box_pack_start (GTK_BOX (vboxContents), hbox5, TRUE, TRUE, 0);
+
+  vbox10 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_set_name (vbox10, "vbox10");
+  gtk_widget_show (vbox10);
+  gtk_box_pack_start (GTK_BOX (hbox5), vbox10, TRUE, TRUE, 0);
+
+  labelCaption = gtk_label_new ("caption");
+  gtk_widget_set_name (labelCaption, "labelCaption");
+  gtk_widget_show (labelCaption);
+  gtk_box_pack_start (GTK_BOX (vbox10), labelCaption, FALSE, FALSE, 5);
+  gtk_label_set_use_markup (GTK_LABEL (labelCaption), TRUE);
+
+  hbox6 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_set_name (hbox6, "hbox6");
+  gtk_widget_show (hbox6);
+  gtk_box_pack_start (GTK_BOX (vbox10), hbox6, TRUE, TRUE, 0);
+
+  imageLogo = create_pixmap (windowAbout, NULL);
+  gtk_widget_set_name (imageLogo, "imageLogo");
+  gtk_widget_show (imageLogo);
+  gtk_box_pack_start (GTK_BOX (hbox6), imageLogo, TRUE, TRUE, 0);
+
+  vboxDescription = gtk_vbox_new (FALSE, 5);
+  gtk_widget_set_name (vboxDescription, "vboxDescription");
+  gtk_widget_show (vboxDescription);
+  gtk_box_pack_start (GTK_BOX (hbox6), vboxDescription, TRUE, TRUE, 1);
+
+  labelCopyright = gtk_label_new ("copyright");
+  gtk_widget_set_name (labelCopyright, "labelCopyright");
+  gtk_widget_show (labelCopyright);
+  gtk_box_pack_start (GTK_BOX (vboxDescription), labelCopyright, FALSE, FALSE, 0);
+
+  labelDescription = gtk_label_new ("description");
+  gtk_widget_set_name (labelDescription, "labelDescription");
+  gtk_widget_show (labelDescription);
+  gtk_box_pack_start (GTK_BOX (vboxDescription), labelDescription, FALSE, FALSE, 0);
+
+  hbuttonbox5 = gtk_hbutton_box_new ();
+  gtk_widget_set_name (hbuttonbox5, "hbuttonbox5");
+  gtk_widget_show (hbuttonbox5);
+  gtk_box_pack_start (GTK_BOX (vboxContents), hbuttonbox5, TRUE, TRUE, 0);
+  gtk_button_box_set_layout (GTK_BUTTON_BOX (hbuttonbox5), GTK_BUTTONBOX_END);
+
+  buttonClose = gtk_button_new_from_stock ("gtk-close");
+  gtk_widget_set_name (buttonClose, "buttonClose");
+  gtk_widget_show (buttonClose);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox5), buttonClose);
+  GTK_WIDGET_SET_FLAGS (buttonClose, GTK_CAN_DEFAULT);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (windowAbout, windowAbout, "windowAbout");
+  GLADE_HOOKUP_OBJECT (windowAbout, vboxContents, "vboxContents");
+  GLADE_HOOKUP_OBJECT (windowAbout, hbox5, "hbox5");
+  GLADE_HOOKUP_OBJECT (windowAbout, vbox10, "vbox10");
+  GLADE_HOOKUP_OBJECT (windowAbout, labelCaption, "labelCaption");
+  GLADE_HOOKUP_OBJECT (windowAbout, hbox6, "hbox6");
+  GLADE_HOOKUP_OBJECT (windowAbout, imageLogo, "imageLogo");
+  GLADE_HOOKUP_OBJECT (windowAbout, vboxDescription, "vboxDescription");
+  GLADE_HOOKUP_OBJECT (windowAbout, labelCopyright, "labelCopyright");
+  GLADE_HOOKUP_OBJECT (windowAbout, labelDescription, "labelDescription");
+  GLADE_HOOKUP_OBJECT (windowAbout, hbuttonbox5, "hbuttonbox5");
+  GLADE_HOOKUP_OBJECT (windowAbout, buttonClose, "buttonClose");
+
+  return windowAbout;
+}
+

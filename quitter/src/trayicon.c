@@ -19,13 +19,33 @@
 
 #include "trayicon.h"
 #include "resource.h"
+#include "appdata.h"
 
 char szClassName[] = "Quitter";
 
 NOTIFYICONDATA icondata;
 HWND msg_window;
-void (*on_menu) ();
-void (*on_window) ();
+HMENU menu;
+
+void 
+show_popup_menu ()
+{
+        POINT pt;
+        GetCursorPos (&pt);
+					
+        menu = CreatePopupMenu();
+        InsertMenu (menu, 0xFFFFFFFF, MF_BYPOSITION | MF_STRING, 
+                ID_PROPERTIES, "&Properties");
+        InsertMenu (menu, 0xFFFFFFFF, MF_BYPOSITION | MF_STRING, 
+                ID_ABOUT, "&About");
+        InsertMenu (menu, 0xFFFFFFFF, MF_BYPOSITION | MF_STRING, 
+                ID_CLOSE, "&Close");
+										
+        SetForegroundWindow (msg_window);
+        TrackPopupMenu (menu, TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_BOTTOMALIGN,
+                pt.x, pt.y, 0, msg_window, NULL);
+        SendMessage (msg_window, WM_NULL, 0, 0);
+}
 
 LRESULT CALLBACK tray_icon_msg (HWND hwnd, 
         UINT message, 
@@ -33,13 +53,23 @@ LRESULT CALLBACK tray_icon_msg (HWND hwnd,
         LPARAM lParam)
 {
         if (WM_TRAY_ICON_NOTIFY == message) {
-                if (WM_RBUTTONDOWN == lParam && on_menu) {
-                        on_menu ();
-                } else if (WM_LBUTTONDBLCLK == lParam && on_window) {
-                        on_window ();
+                if (WM_RBUTTONDOWN == lParam) {
+                        show_popup_menu ();
+                } else if (WM_LBUTTONDBLCLK == lParam) {
+                        show_stats_window ();
                 }
                 return 0;
-        }        
+        } else if (WM_COMMAND == message) {
+                if (ID_CLOSE == LOWORD(wParam)) {
+                        free_appdata(appdata), appdata = NULL;
+                        remove_tray_icon ();
+			PostQuitMessage (0);
+                } else if (ID_PROPERTIES == LOWORD(wParam)) {
+                        show_prefs_window ();
+                } else if (ID_ABOUT == LOWORD(wParam)) {
+                        show_about_window ();
+                }
+        }
         return DefWindowProc (hwnd, message, wParam, lParam);
 }
 
@@ -66,13 +96,8 @@ HWND create_msg_window (HINSTANCE instance)
 }
 
 void create_tray_icon (HWND hwnd, 
-        HINSTANCE instance,
-        void *menu_callback,
-        void *window_callback)
+        HINSTANCE instance)
 {
-        on_menu = menu_callback;
-        on_window = window_callback;
-
         msg_window = create_msg_window (instance);
         
         icondata.cbSize = sizeof (NOTIFYICONDATA);
@@ -97,6 +122,6 @@ void update_tray_icon (char *tooltip)
 void remove_tray_icon () 
 {
 	Shell_NotifyIcon (NIM_DELETE, &icondata); 
-	DestroyWindow(msg_window);
+	DestroyWindow (msg_window);
 }
 

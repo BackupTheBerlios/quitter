@@ -25,9 +25,7 @@
 #define WM_TRAY_ICON_NOTIFY (WM_USER + 100)
 
 void create_tray_icon (HWND hwnd, 
-        HINSTANCE instance,
-        void *menu_callback,
-        void *window_callback);
+        HINSTANCE instance);
 void update_tray_icon (char *tooltip);
 void remove_tray_icon ();
 

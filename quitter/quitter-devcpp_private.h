@@ -5,11 +5,11 @@
 #define QUITTER-DEVCPP_PRIVATE_H
 
 // VERSION DEFINITIONS
-#define VER_STRING	"0.1.1.83"
+#define VER_STRING	"0.1.1.146"
 #define VER_MAJOR	0
 #define VER_MINOR	1
 #define VER_RELEASE	1
-#define VER_BUILD	83
+#define VER_BUILD	146
 #define COMPANY_NAME	""
 #define FILE_VERSION	""
 #define FILE_DESCRIPTION	"Developed using the Dev-C++ IDE"

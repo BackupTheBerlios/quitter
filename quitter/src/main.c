@@ -44,11 +44,6 @@ PANEL_APPLET_BONOBO_FACTORY ("OAFIID:QuitterApplet_Factory",
 			     PANEL_TYPE_APPLET,
 			     "QuitterApplet", "0", quitter_applet_fill, NULL);
 #else
-void show_menu ()
-{
-        // TODO: popup menu
-}        
-
 int WINAPI WinMain (HINSTANCE hThisInstance,
                     HINSTANCE hPrevInstance,
                     LPSTR lpszArgument,
@@ -60,10 +55,9 @@ int WINAPI WinMain (HINSTANCE hThisInstance,
         appdata->main_window = appdata->windowStats;
         init_stats_window ();
         
-        // create tray icon stuff
         HWND hwnd = GDK_WINDOW_HWND (appdata->main_window->window);
         MinimizeWndToTray (hwnd);
-        create_tray_icon (hwnd, hThisInstance, show_menu, show_stats_window);
+        create_tray_icon (hwnd, hThisInstance);
         
         gtk_main();
         return 0;
