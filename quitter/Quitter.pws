@@ -28,11 +28,6 @@ RunInTerminal=true
 [Project State]
 clean before build=false
 
-[filelist]
-0=/home/tanel/Projects/quitter/src/prefs_window.h
-1=/home/tanel/Projects/quitter/src/edit_window.c
-2=/home/tanel/Projects/quitter/src/prefs_window.c
-
 [Project Tree]
 0=0
 1=0:0

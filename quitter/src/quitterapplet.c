@@ -42,6 +42,10 @@ quitter_applet_fill (PanelApplet * applet, const gchar * iid, gpointer data)
 {
 	if (strcmp (iid, "OAFIID:QuitterApplet") != 0)
 		return FALSE;
+        
+        if (appdata) {
+                return TRUE;
+        }
 
         GtkWidget *event_box = gtk_event_box_new ();
 	gtk_container_add (GTK_CONTAINER (applet), event_box);
@@ -68,7 +72,6 @@ quitter_applet_fill (PanelApplet * applet, const gchar * iid, gpointer data)
         gtk_tooltips_set_tip (GTK_TOOLTIPS (tooltips), 
                 GTK_WIDGET (applet), "Quitter", "Quitter");
 
-        
         appdata = new_appdata(applet);
         g_timeout_add(1000 * 60, // every minute
                 on_update_stats, NULL);
@@ -95,6 +98,7 @@ void
 on_applet_destroy (GtkObject * object, gpointer data)
 {
         free_appdata(appdata);
+        appdata = NULL;
 }
 
 void
