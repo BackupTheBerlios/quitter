@@ -71,9 +71,9 @@ quitter_applet_fill (PanelApplet * applet, const gchar * iid, gpointer data)
         
         appdata = new_appdata(applet);
         g_timeout_add(1000 * 60, // every minute
-                update_stats, NULL);
+                on_update_stats, NULL);
                 
-        update_stats(NULL);
+        update_stats ();
         
 	return TRUE;
 }

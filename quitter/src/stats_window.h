@@ -31,7 +31,20 @@ on_stats_destroy (GtkObject *object,
         gpointer data);
 
 gboolean
-update_stats (gpointer data);
+on_update_stats (gpointer data);
+
+HABIT *
+get_selected_habit ();
+
+gboolean
+update_stats ();
+
+void
+get_habit_details (HABIT *habit, 
+        time_t now,     
+        float *saved,
+        float *spent_per_day,
+        int *unused_units);
 
 void
 on_stats_select_habit(GtkTreeSelection *selection, 

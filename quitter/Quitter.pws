@@ -1,8 +1,8 @@
 
 [filenumbers]
-0=63
-1=125
-2=59
+0=76
+1=48
+2=269
 3=29
 4=126
 5=28
@@ -28,6 +28,11 @@ RunInTerminal=true
 [Project State]
 clean before build=false
 
+[filelist]
+0=/home/tanel/Projects/quitter/src/quitterapplet.c
+1=/home/tanel/Projects/quitter/src/stats_window.h
+2=/home/tanel/Projects/quitter/src/stats_window.c
+
 [Project Tree]
 0=0
 1=0:0
@@ -41,4 +46,3 @@ clean before build=false
 
 [File Tree]
 0=0
-1=0:2

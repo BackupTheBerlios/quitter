@@ -272,7 +272,6 @@ create_windowPreferences (void)
   GtkWidget *frameHabits;
   GtkWidget *hbox3;
   GtkWidget *vbox3;
-  GtkWidget *scrolledwindowHabits;
   GtkWidget *treeviewHabits;
   GtkWidget *vbuttonboxHabits;
   GtkWidget *buttonAddHabit;
@@ -354,16 +353,10 @@ create_windowPreferences (void)
   gtk_widget_show (vbox3);
   gtk_box_pack_start (GTK_BOX (hbox3), vbox3, TRUE, TRUE, 0);
 
-  scrolledwindowHabits = gtk_scrolled_window_new (NULL, NULL);
-  gtk_widget_set_name (scrolledwindowHabits, "scrolledwindowHabits");
-  gtk_widget_show (scrolledwindowHabits);
-  gtk_box_pack_start (GTK_BOX (vbox3), scrolledwindowHabits, TRUE, TRUE, 0);
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindowHabits), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-
   treeviewHabits = gtk_tree_view_new ();
   gtk_widget_set_name (treeviewHabits, "treeviewHabits");
   gtk_widget_show (treeviewHabits);
-  gtk_container_add (GTK_CONTAINER (scrolledwindowHabits), treeviewHabits);
+  gtk_box_pack_start (GTK_BOX (vbox3), treeviewHabits, TRUE, TRUE, 0);
 
   vbuttonboxHabits = gtk_vbutton_box_new ();
   gtk_widget_set_name (vbuttonboxHabits, "vbuttonboxHabits");
@@ -410,7 +403,6 @@ create_windowPreferences (void)
   GLADE_HOOKUP_OBJECT (windowPreferences, frameHabits, "frameHabits");
   GLADE_HOOKUP_OBJECT (windowPreferences, hbox3, "hbox3");
   GLADE_HOOKUP_OBJECT (windowPreferences, vbox3, "vbox3");
-  GLADE_HOOKUP_OBJECT (windowPreferences, scrolledwindowHabits, "scrolledwindowHabits");
   GLADE_HOOKUP_OBJECT (windowPreferences, treeviewHabits, "treeviewHabits");
   GLADE_HOOKUP_OBJECT (windowPreferences, vbuttonboxHabits, "vbuttonboxHabits");
   GLADE_HOOKUP_OBJECT (windowPreferences, buttonAddHabit, "buttonAddHabit");

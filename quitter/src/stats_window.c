@@ -110,7 +110,7 @@ create_stats_window()
         move_window_to_last_position(appdata->windowStats, 
                         WINDOW_POSITIONX, WINDOW_POSITIONY);
                 
-        update_stats (NULL);
+        update_stats ();
 }
 
 void
@@ -121,17 +121,14 @@ on_stats_destroy (GtkObject *object,
 }
 
 gboolean
-update_stats (gpointer data)
+on_update_stats (gpointer data)
 {
-        if (NULL == appdata->habits || appdata->habits->len < 1) {
-                return TRUE;
-        }
-        
-        time_t now = time(NULL);
-        tzset();
-        struct tm cur_tm;
-        localtime_r(&now, &cur_tm);
+        return update_stats();
+}
 
+HABIT *
+get_selected_habit ()
+{
         HABIT *habit = NULL;
         if (appdata->habits->len > 1 && appdata->windowStats) {
                 GtkTreeView* treeviewHabits = (GtkTreeView*)lookup_widget (
@@ -150,59 +147,114 @@ update_stats (gpointer data)
         if (! habit) {
                 habit = g_ptr_array_index(appdata->habits, 0);
         }
+        return habit;
+}
+
+gboolean
+update_stats ()
+{
+        if (NULL == appdata->habits || appdata->habits->len < 1) {
+                return TRUE;
+        }
+        
+        time_t now = time(NULL);
+        tzset();
+        struct tm cur_tm;
+        localtime_r(&now, &cur_tm);
+
+        HABIT *habit = get_selected_habit ();
         
         gchar* cleantime = print_clean_time(cur_tm, habit->quittime);
+        
+        // show clean time as the applet icons tooltip 
         GtkTooltipsData* tooltips = 
                 gtk_tooltips_data_get(GTK_WIDGET (appdata->applet));
         if (tooltips->tip_text) {
                g_free(tooltips->tip_text);
         }
         tooltips->tip_text = g_strdup(cleantime);
+        
+        // show clean time in statistics window
         if (appdata->windowStats) {
                 GtkLabel* labelCleanValue = (GtkLabel*)lookup_widget(
                         appdata->windowStats, "labelCleanValue");
                 gtk_label_set_text(labelCleanValue, cleantime);
         }
+        
         g_free(cleantime), cleantime = NULL;
         
-        if (! appdata->windowStats) {
-                return TRUE;
+        if (appdata->windowStats) {
+                // show details in statistics window
+                float saved, spent_per_day;
+                int unused_units;
+                get_habit_details (habit, now, &saved, &spent_per_day,
+                        &unused_units);
+                
+                gchar* money_saved = g_strdup_printf("%.2f", saved);
+                GtkLabel* labelSavedValue = (GtkLabel*)lookup_widget(
+                        appdata->windowStats, "labelSavedValue");
+                gtk_label_set_text(labelSavedValue, money_saved);
+                g_free(money_saved), money_saved = NULL;
+                
+                gchar* daily_saved = g_strdup_printf("%.2f", spent_per_day);
+                GtkLabel* labelDailyValue = (GtkLabel*)lookup_widget(
+                        appdata->windowStats, "labelDailyValue");
+                gtk_label_set_text(labelDailyValue, daily_saved);
+                g_free(daily_saved), daily_saved = NULL;
+                
+                gchar* units = g_strdup_printf("%d", unused_units);
+                GtkLabel* labelUnitsValue = (GtkLabel*)lookup_widget(
+                        appdata->windowStats, "labelUnitsValue");
+                gtk_label_set_text(labelUnitsValue, units);
+                g_free(units), units = NULL;
+                
+                // show total saved value
+                float total_saved = 0;
+                int i;
+                for (i = 0; i < appdata->habits->len; i++) {
+                        habit = g_ptr_array_index(appdata->habits, i);
+                        float saved, spent_per_day;
+                        int unused_units;
+                        get_habit_details (habit, now, &saved, &spent_per_day,
+                                &unused_units);
+                        total_saved += saved;
+                }
+                gchar* total = g_strdup_printf("%.2f", total_saved);
+                GtkLabel* labelSavedValueTotal = (GtkLabel*)lookup_widget(
+                        appdata->windowStats, "labelSavedValueTotal");
+                gtk_label_set_text(labelSavedValueTotal, total);
+                g_free(total), total = NULL;
         }
-        
-        float price_unit = habit->price_per_pack / habit->units_per_pack;
-        float spent_day = price_unit * habit->units_per_day;
-        float spent_sec = spent_day / 24 / 60 / 60;
-        double secs = difftime(now, mktime(&habit->quittime));
-        
-        gchar* money_saved = g_strdup_printf("%.2f", secs * spent_sec);
-        GtkLabel* labelSavedValue = (GtkLabel*)lookup_widget(
-                appdata->windowStats, "labelSavedValue");
-        gtk_label_set_text(labelSavedValue, money_saved);
-        g_free(money_saved), money_saved = NULL;
-        
-        gchar* daily_saved = g_strdup_printf("%.2f", spent_day);
-        GtkLabel* labelDailyValue = (GtkLabel*)lookup_widget(
-                appdata->windowStats, "labelDailyValue");
-        gtk_label_set_text(labelDailyValue, daily_saved);
-        g_free(daily_saved), daily_saved = NULL;
-	
-        float units_sec = (float)habit->units_per_day / 24 / 60 / 60;
-	int unused_units = units_sec * secs;
-        
-        gchar* units = g_strdup_printf("%d", unused_units);
-        GtkLabel* labelUnitsValue = (GtkLabel*)lookup_widget(
-                appdata->windowStats, "labelUnitsValue");
-        gtk_label_set_text(labelUnitsValue, units);
-        g_free(units), units = NULL;
-        
         return TRUE;
 }
+
+void
+get_habit_details (HABIT *habit, 
+        time_t now,     
+        float *saved,
+        float *spent_per_day,
+        int *unused_units)
+{
+        float price_per_unit = 0;
+        if (habit->price_per_pack > 0 ) {
+                price_per_unit = habit->price_per_pack / habit->units_per_pack;
+        }
+
+        *spent_per_day = price_per_unit * habit->units_per_day;
+        float spent_sec = *spent_per_day / 24 / 60 / 60;
+        
+        double secs = difftime(now, mktime(&habit->quittime));
+        *saved = secs * spent_sec;
+        
+        float units_sec = (float)habit->units_per_day / 24 / 60 / 60;
+        *unused_units = units_sec * secs;
+}        
 
 void
 on_stats_select_habit(GtkTreeSelection *selection, 
         gpointer data)
 {
-        update_stats (NULL);
+        update_stats ();
 }
 
 gchar* 
