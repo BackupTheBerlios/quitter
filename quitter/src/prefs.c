@@ -195,7 +195,7 @@ HABIT*
 new_habit()
 {
         HABIT* habit = g_new(HABIT, 1);
-        habit->name = "A nasty habit"; 
+        habit->name = g_strdup("A nasty habit"); 
         time_t now = time(NULL);
         tzset();
         localtime_r(&now, &habit->quittime);
@@ -216,4 +216,13 @@ is_user_added_habit(APPDATA* app,
                 }
         }
         return TRUE;
+}
+
+void
+free_habit (HABIT *habit)
+{
+        g_free(habit->name);
+        habit->name = NULL;
+        g_free(habit);
+        habit = NULL;
 }

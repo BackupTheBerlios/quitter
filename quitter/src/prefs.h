@@ -78,5 +78,8 @@ new_habit();
 gboolean
 is_user_added_habit(APPDATA* app, 
         HABIT* habit);
+        
+void
+free_habit (HABIT *habit);
 
 #endif

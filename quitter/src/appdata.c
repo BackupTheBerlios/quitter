@@ -38,8 +38,15 @@ new_appdata(PanelApplet* applet)
 }
 
 void
-free_appdata(APPDATA* appdata)
+free_appdata(APPDATA *appdata)
 {
+        g_free(appdata->username);
+        appdata->username = NULL;
+        int i;
+        for (i = 0; i < appdata->habits->len; i++) {
+                HABIT *habit = g_ptr_array_index(appdata->habits, i);
+                free_habit(habit);
+        }
         g_ptr_array_free(appdata->habits, TRUE);
         appdata->habits = NULL;
         g_free(appdata);

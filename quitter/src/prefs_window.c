@@ -161,7 +161,7 @@ on_prefs_destroy (GtkObject *object,
                 gchar *quittime = NULL;
                 gtk_tree_model_get (model, &iter, 1, &quittime, 2, &habit, -1);
                 if (is_user_added_habit(appdata, habit)) {
-                        g_free(habit), habit = NULL;
+                        free_habit(habit);
                 }
                 g_free(quittime);
         }        
@@ -180,7 +180,7 @@ on_apply_prefs(GtkButton *button,
                 error_msg("Please enter you name.", appdata->windowPrefs);
                 return;
         }
-        // TODO: is it leaking?
+        g_free(appdata->username);
         appdata->username = g_strdup(text);
         
         GtkTreeView* treeviewHabits = (GtkTreeView*)lookup_widget (
@@ -220,7 +220,7 @@ on_apply_prefs(GtkButton *button,
         for (i = 0; i < deleted_items->len; i++) {
                 HABIT *habit = g_ptr_array_index(deleted_items, i);
                 g_ptr_array_remove(appdata->habits, habit);
-                g_free(habit), habit = NULL;
+                free_habit(habit);
         }
         g_ptr_array_free(deleted_items, FALSE);
         write_prefs(appdata);
@@ -258,7 +258,7 @@ on_remove_habit(GtkButton *button,
                 gchar *quittime = NULL;
                 gtk_tree_model_get (model, &iter, 1, &quittime, 2, &habit, -1);
                 if (is_user_added_habit(appdata, habit)) {
-                        g_free(habit), habit = NULL;
+                        free_habit(habit);
                 }
                 g_free(quittime);
                 gtk_list_store_remove (GTK_LIST_STORE(model), &iter);
@@ -293,4 +293,31 @@ print_quittime(HABIT *habit)
                 habit->quittime.tm_mday,
                 habit->quittime.tm_mon + 1,
                 habit->quittime.tm_year + 1900);
+}
+
+void
+update_selected_habit ()
+{
+        GtkTreeView *treeviewHabits = (GtkTreeView*)lookup_widget (
+                appdata->windowPrefs, 
+                "treeviewHabits");
+        GtkTreeSelection *selection = gtk_tree_view_get_selection (
+                GTK_TREE_VIEW (treeviewHabits));
+        GtkTreeIter iter;
+        GtkTreeModel *model = NULL;
+        if (! gtk_tree_selection_get_selected (selection, 
+                        &model, &iter)) {
+                return;
+        }
+        HABIT *habit = NULL;
+        gchar *quittime = NULL;
+        gtk_tree_model_get (model, &iter, 1, &quittime, 2, &habit, -1);
+        g_free(quittime), quittime = NULL;
+        GtkListStore *store = (GtkListStore *) gtk_tree_view_get_model (
+                treeviewHabits);
+        gtk_list_store_set (store, &iter, 
+                0, habit->name,
+                1, print_quittime (habit),
+                2, habit,
+                -1);
 }

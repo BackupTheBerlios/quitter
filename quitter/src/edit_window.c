@@ -18,6 +18,7 @@
  */
 
 #include "edit_window.h"
+#include "prefs_window.h"
 #include "windowposition.h"
 #include "interface.h"
 #include "support.h"
@@ -88,15 +89,25 @@ void
 on_apply_habit(GtkButton *button,
         gpointer user_data)
 {
-        GtkEntry* entry = (GtkEntry*)lookup_widget (
+      	GtkEntry* entry = (GtkEntry*)lookup_widget (
+                appdata->windowHabit, 
+                "entryHabitName");
+        G_CONST_RETURN gchar *habit_name = gtk_entry_get_text (entry);
+        if (!habit_name || g_utf8_strlen(habit_name,-1) < 1) {
+                error_msg("Please enter a name for this habit.", appdata->windowPrefs);
+                return;
+        }
+        
+        entry = (GtkEntry*)lookup_widget (
                 appdata->windowHabit, 
                 "entryYear");
-        G_CONST_RETURN gchar* text = gtk_entry_get_text(entry);
+        G_CONST_RETURN gchar *text = gtk_entry_get_text(entry);
         int year = atoi(text);
         if (year < 1900) {
                 error_msg("Entered year is not valid.", appdata->windowHabit);
                 return;
         }
+        
         entry = (GtkEntry*)lookup_widget (appdata->windowHabit, "entryMonth");
         text = gtk_entry_get_text(entry);
         int month = atoi(text);
@@ -105,6 +116,7 @@ on_apply_habit(GtkButton *button,
                         appdata->windowHabit);
                 return;
         }
+        
         entry = (GtkEntry*)lookup_widget (appdata->windowHabit, "entryDay");
         text = gtk_entry_get_text(entry);
         int day = atoi(text);
@@ -121,6 +133,7 @@ on_apply_habit(GtkButton *button,
                 g_free(msg);
                 return;
         }
+        
         entry = (GtkEntry*)lookup_widget (appdata->windowHabit, "entryHour");
         text = gtk_entry_get_text(entry);
         int hour = atoi(text);
@@ -129,6 +142,7 @@ on_apply_habit(GtkButton *button,
                         appdata->windowHabit);
                 return;
         }
+        
         entry = (GtkEntry*)lookup_widget (appdata->windowHabit, "entryMinute");
         text = gtk_entry_get_text(entry);
         int minute = atoi(text);
@@ -137,6 +151,7 @@ on_apply_habit(GtkButton *button,
                         appdata->windowHabit);
                 return;
         }
+        
         entry = (GtkEntry*)lookup_widget (appdata->windowHabit, 
                 "entryUnitsPerDay");
         text = gtk_entry_get_text(entry);
@@ -153,6 +168,9 @@ on_apply_habit(GtkButton *button,
         float price_per_pack = atof(text);
        
         HABIT *habit = (HABIT *)user_data;
+
+        g_free(habit->name);
+        habit->name = g_strdup(habit_name);
         
         habit->quittime.tm_year = year - 1900;
         habit->quittime.tm_mon = month - 1;
@@ -163,6 +181,8 @@ on_apply_habit(GtkButton *button,
         habit->units_per_day = units_per_day;
         habit->units_per_pack = units_per_pack;
         habit->price_per_pack = price_per_pack;
+        
+        update_selected_habit ();
         
         on_window_close(button, appdata->windowHabit);
 }

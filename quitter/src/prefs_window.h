@@ -54,5 +54,8 @@ on_edit_habit(GtkButton *button,
         
 gchar *
 print_quittime(HABIT *habit);
-        
+
+void
+update_selected_habit ();
+
 #endif
