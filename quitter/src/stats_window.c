@@ -176,9 +176,6 @@ update_stats ()
         }
 
         gchar *cleantime = print_clean_time (cur_tm, habit->quittime);
-        gchar *clean_from_habit = g_strdup_printf ("%s: %s",
-                habit->name, cleantime);
-        g_free (cleantime), cleantime = NULL;
         
         // show clean time as the applet icons tooltip 
         GtkTooltipsData* tooltips = 
@@ -186,16 +183,18 @@ update_stats ()
         if (tooltips->tip_text) {
                 g_free(tooltips->tip_text);
         }
-        tooltips->tip_text = g_strdup (clean_from_habit);
+        gchar *habit_clean_time = g_strdup_printf ("%s: %s",
+                habit->name, cleantime);
+        tooltips->tip_text = g_strdup (habit_clean_time);
+        g_free (habit_clean_time), habit_clean_time = NULL;
         
         // show clean time in statistics window
         if (appdata->windowStats) {
                 GtkLabel* labelCleanValue = (GtkLabel*)lookup_widget(
                         appdata->windowStats, "labelCleanValue");
-                gtk_label_set_text (labelCleanValue, clean_from_habit);
+                gtk_label_set_text (labelCleanValue, cleantime);
         }
-        
-        g_free (clean_from_habit), clean_from_habit = NULL;
+        g_free (cleantime), cleantime = NULL;
         
         if (appdata->windowStats) {
                 // show details in statistics window
@@ -350,7 +349,7 @@ on_stats_window_delete(GtkWidget *widget,
         gpointer user_data)
 {
 #ifndef __WIN32__
-        on_window_delete (widget, event, user_data);
+        return on_window_delete (widget, event, user_data);
 #else
         // TODO: CLOSE APP
 #endif
@@ -366,4 +365,3 @@ on_stats_window_close(GtkButton *button,
         // TODO: CLOSE APP
 #endif
 }
-

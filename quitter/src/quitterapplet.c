@@ -24,6 +24,7 @@
 #include "stats_window.h"
 #include "prefs_window.h"
 #include "about_window.h"
+#include "interface.h"
 
 static const char quitter_menu_xml [] =
         "<popup name=\"button3\">\n"
@@ -90,6 +91,7 @@ quitter_applet_fill_contents(GtkWidget *applet)
                 GTK_WIDGET (applet), "Quitter", "Quitter");
                 
         appdata = new_appdata ();
+        appdata->main_window = applet;
         start_timer ();
 }
 
@@ -100,10 +102,10 @@ on_button_press (GtkWidget * event_box, GdkEventButton * event, gpointer data)
                 return FALSE;
         }
         if (! appdata->windowStats) { 
-                create_stats_window();
+                appdata->windowStats = create_windowStats ();
+                init_stats_window ();
         }
         gtk_window_present ((GtkWindow *) appdata->windowStats);
-        
         return TRUE;        
 }
 
@@ -134,4 +136,3 @@ menu_about_cb( BonoboUIComponent *ui,
         }
         gtk_window_present((GtkWindow*)appdata->about);
 }
-
