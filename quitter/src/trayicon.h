@@ -17,9 +17,18 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef _RESOURCE_H
-#define _RESOURCE_H
+#ifndef _TRAYICON_H
+#define _TRAYICON_H
 
-#define IDI_TRAYICON                    101
+#include <windows.h>
+
+#define WM_TRAY_ICON_NOTIFY (WM_USER + 100)
+
+void create_tray_icon (HWND hwnd, 
+        HINSTANCE instance,
+        void *menu_callback,
+        void *window_callback);
+void update_tray_icon (char *tooltip);
+void remove_tray_icon ();
 
 #endif

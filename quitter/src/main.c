@@ -24,33 +24,49 @@
 #include <string.h>
 #include <gtk/gtk.h>
 #include <gtk/gtklabel.h>
-#ifndef __WIN32__
-#include <panel-applet.h>
-#include "quitterapplet.h"
-#else
-#include "stats_window.h"
-#endif
-
 #include "interface.h"
 #include "support.h"
 #include "appdata.h"
+#ifdef __WIN32__
+#include "stats_window.h"
+#include <windows.h>
+#include <winuser.h>
+#include <gdk/gdkwin32.h>
+#include "MinimizeToTray.h"
+#include "trayicon.h"
+#else
+#include <panel-applet.h>
+#include "quitterapplet.h"
+#endif
 
 #ifndef __WIN32__
 PANEL_APPLET_BONOBO_FACTORY ("OAFIID:QuitterApplet_Factory",
 			     PANEL_TYPE_APPLET,
 			     "QuitterApplet", "0", quitter_applet_fill, NULL);
 #else
-int main(int argc, char *argv[])
+void show_menu ()
 {
-        gtk_init (&argc, &argv);
+        // TODO: popup menu
+}        
+
+int WINAPI WinMain (HINSTANCE hThisInstance,
+                    HINSTANCE hPrevInstance,
+                    LPSTR lpszArgument,
+                    int nFunsterStil)
+{
+        gtk_init (&_argc, &_argv);
         appdata = new_appdata ();
         appdata->windowStats = create_windowStats ();
         appdata->main_window = appdata->windowStats;
-        GtkTooltips *tooltips = gtk_tooltips_new ();
-        gtk_tooltips_set_tip (GTK_TOOLTIPS (tooltips), 
-                GTK_WIDGET (appdata->main_window), "Quitter", "Quitter");
         init_stats_window ();
+        
+        // create tray icon stuff
+        HWND hwnd = GDK_WINDOW_HWND (appdata->main_window->window);
+        MinimizeWndToTray (hwnd);
+        create_tray_icon (hwnd, hThisInstance, show_menu, show_stats_window);
+        
         gtk_main();
         return 0;
-}        
+}
 #endif
+

@@ -17,20 +17,19 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <glib.h>
+
 #include "support.h"
 #include "interface.h"
 #include "windowposition.h"
 #include "stats_window.h"
-
 #ifdef __WIN32__
-#include "tray_win32.h"
+#include "trayicon.h"
 #include <windows.h>
 #include <winuser.h>
 #include <gdk/gdkwin32.h>
 #include "MinimizeToTray.h"
 #endif
-
-#include <glib.h>
 
 #define STATS_COLUMN_NAME 0
 #define STATS_COLUMN_DATA 1
@@ -126,11 +125,6 @@ init_stats_window ()
                         WINDOW_POSITIONX, WINDOW_POSITIONY);
                 
         update_stats ();
-        
-#ifdef __WIN32__
-        MinimizeWndToTray (GDK_WINDOW_HWND (appdata->main_window->window));
-        create_tray_icon ();
-#endif        
 }
 
 void
@@ -191,14 +185,18 @@ update_stats ()
         gchar *cleantime = print_clean_time (cur_tm, habit->quittime);
         
         // show clean time as the applet icons tooltip 
+        gchar *habit_clean_time = g_strdup_printf ("%s: %s",
+                habit->name, cleantime);
+#ifdef __WIN32__
+        update_tray_icon (habit_clean_time);
+#else
         GtkTooltipsData* tooltips = 
                 gtk_tooltips_data_get(GTK_WIDGET (appdata->main_window));
         if (tooltips->tip_text) {
                 g_free(tooltips->tip_text);
         }
-        gchar *habit_clean_time = g_strdup_printf ("%s: %s",
-                habit->name, cleantime);
         tooltips->tip_text = g_strdup (habit_clean_time);
+#endif        
         g_free (habit_clean_time), habit_clean_time = NULL;
         
         // show clean time in statistics window
@@ -364,7 +362,7 @@ on_stats_window_delete(GtkWidget *widget,
 #ifndef __WIN32__
         return on_window_delete (widget, event, user_data);
 #else
-        MinimizeWndToTray (GDK_WINDOW_HWND (appdata->main_window->window));
+        MinimizeWndToTray (GDK_WINDOW_HWND (appdata->main_window->window));        
 #endif
 }
 

@@ -1,4 +1,4 @@
 #include "resource.h"
 
-QUITTER_ICON    ICON "../pixmaps/quitter.ico"
+IDI_TRAYICON            ICON    DISCARDABLE     "pixmaps\\quitter.ico"
 
