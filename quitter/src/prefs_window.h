@@ -23,6 +23,8 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
+#include "prefs.h"
+
 void 
 create_prefs_window();
 
@@ -49,5 +51,8 @@ on_remove_habit(GtkButton *button,
 void
 on_edit_habit(GtkButton *button,
         gpointer user_data);
-
+        
+gchar *
+print_quittime(HABIT *habit);
+        
 #endif

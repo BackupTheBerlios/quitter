@@ -43,7 +43,37 @@ create_stats_window()
                 appdata->windowStats,
                 "treeviewHabits");
 
-        show_habits_list(treeviewHabits, on_stats_select_habit);
+        GtkListStore *habits_store = gtk_list_store_new (
+                2, G_TYPE_STRING, G_TYPE_POINTER);
+        gtk_tree_view_set_model (treeviewHabits, 
+                GTK_TREE_MODEL (habits_store));
+        g_object_unref(habits_store);
+                
+        GtkTreeSelection *selection = gtk_tree_view_get_selection (
+                treeviewHabits);
+        gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
+        g_signal_connect(G_OBJECT (selection), 
+                "changed", 
+                G_CALLBACK (on_stats_select_habit),
+                treeviewHabits);
+                
+        GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+        GtkTreeViewColumn *column = 
+                gtk_tree_view_column_new_with_attributes (
+                "Habit", renderer, "text", 0, NULL);
+        gtk_tree_view_append_column (
+                GTK_TREE_VIEW (treeviewHabits), column);
+                
+        int i;
+        for (i = 0; i < appdata->habits->len; i++) {
+                HABIT* habit = g_ptr_array_index(appdata->habits, i);
+                GtkTreeIter iter;
+                gtk_list_store_append (habits_store, &iter);
+                gtk_list_store_set (habits_store, &iter, 
+                        0, habit->name,
+                        1, habit,
+                        -1);
+        }
                 
         gtk_widget_show_all (appdata->windowStats);
                 
@@ -114,7 +144,7 @@ update_stats (gpointer data)
                 gboolean selected = gtk_tree_selection_get_selected (
                         selection, &model, &iter);
                 if (selected) {
-                        gtk_tree_model_get (model, &iter, COL_DATA, &habit, -1);
+                        gtk_tree_model_get (model, &iter, 1, &habit, -1);
                 }
         }
         if (! habit) {
@@ -175,18 +205,6 @@ on_stats_select_habit(GtkTreeSelection *selection,
         update_stats (NULL);
 }
 
-void
-add_habit_to_store(GtkListStore *list_store, 
-        HABIT* habit)
-{
-        GtkTreeIter iter;
-        gtk_list_store_append (list_store, &iter);
-        gtk_list_store_set (list_store, &iter, 
-                COL_NAME, habit->name,
-                COL_DATA, habit,
-                -1);
-}
-
 gchar* 
 print_clean_time(struct tm cur_tm,
         struct tm quittime)
@@ -231,39 +249,5 @@ print_clean_time(struct tm cur_tm,
         } else {
                 return g_strdup_printf("%dM %dD %dh %dm", 
                         months, days, hours, minutes);
-        }
-}
-
-void
-show_habits_list(GtkTreeView *treeview, 
-        void *callback)
-{
-        GtkListStore *habits_store = gtk_list_store_new (
-                2, G_TYPE_STRING, G_TYPE_POINTER);
-        gtk_tree_view_set_model (treeview, 
-                GTK_TREE_MODEL (habits_store));
-        g_object_unref(habits_store);
-                
-        GtkTreeSelection *selection = gtk_tree_view_get_selection (treeview);
-        gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
-        g_signal_connect(G_OBJECT (selection), 
-                "changed", 
-                G_CALLBACK (callback),
-                treeview);
-                
-        GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-        GtkTreeViewColumn *column = 
-                gtk_tree_view_column_new_with_attributes (
-                NULL, renderer, "text", COL_NAME, NULL);
-        gtk_tree_view_append_column (
-                GTK_TREE_VIEW (treeview), column);
-        gtk_tree_view_set_headers_visible (
-                GTK_TREE_VIEW (treeview),
-                FALSE);
-                
-        int i;
-        for (i = 0; i < appdata->habits->len; i++) {
-                HABIT* habit = g_ptr_array_index(appdata->habits, i);
-                add_habit_to_store (habits_store, habit);
         }
 }

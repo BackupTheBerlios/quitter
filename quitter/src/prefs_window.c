@@ -55,7 +55,45 @@ create_prefs_window()
                 appdata->windowPrefs, 
                 "treeviewHabits");
                 
-        show_habits_list(treeviewHabits, on_prefs_select_habit);
+        GtkListStore *habits_store = gtk_list_store_new (
+                3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER);
+        gtk_tree_view_set_model (treeviewHabits, 
+                GTK_TREE_MODEL (habits_store));
+        g_object_unref(habits_store);
+                
+        GtkTreeSelection *selection = gtk_tree_view_get_selection (
+                treeviewHabits);
+        gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
+        g_signal_connect(G_OBJECT (selection), 
+                "changed", 
+                G_CALLBACK (on_prefs_select_habit),
+                treeviewHabits);
+                
+        GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+        
+        GtkTreeViewColumn *column_name = 
+                gtk_tree_view_column_new_with_attributes (
+                "Name", renderer, "text", 0, NULL);
+        gtk_tree_view_append_column (
+                GTK_TREE_VIEW (treeviewHabits), column_name);
+
+        GtkTreeViewColumn *column_quittime = 
+                gtk_tree_view_column_new_with_attributes (
+                "Quit time", renderer, "text", 1, NULL);
+        gtk_tree_view_append_column (
+                GTK_TREE_VIEW (treeviewHabits), column_quittime);
+
+        int i;
+        for (i = 0; i < appdata->habits->len; i++) {
+                HABIT* habit = g_ptr_array_index(appdata->habits, i);
+                GtkTreeIter iter;
+                gtk_list_store_append (habits_store, &iter);
+                gtk_list_store_set (habits_store, &iter, 
+                        0, habit->name,
+                        1, print_quittime(habit),
+                        2, habit,
+                        -1);
+        }
                 
         GtkWidget* buttonRemoveHabit = lookup_widget (
                 appdata->windowPrefs,
@@ -120,12 +158,12 @@ on_prefs_destroy (GtkObject *object,
                         more_items;
                         more_items = gtk_tree_model_iter_next(model, &iter)) {
                 HABIT *habit = NULL;
-                gtk_tree_model_get (model, &iter, 
-                        COL_DATA, &habit,
-                        -1);
+                gchar *quittime = NULL;
+                gtk_tree_model_get (model, &iter, 1, &quittime, 2, &habit, -1);
                 if (is_user_added_habit(appdata, habit)) {
                         g_free(habit), habit = NULL;
                 }
+                g_free(quittime);
         }        
         appdata->windowPrefs = NULL;
 }
@@ -137,7 +175,7 @@ on_apply_prefs(GtkButton *button,
       	GtkEntry* entry = (GtkEntry*)lookup_widget (
                 appdata->windowPrefs, 
                 "entryUserName");
-        G_CONST_RETURN gchar* text = gtk_entry_get_text (entry);
+        G_CONST_RETURN gchar *text = gtk_entry_get_text (entry);
         if (!text || g_utf8_strlen(text,-1) < 1) {
                 error_msg("Please enter you name.", appdata->windowPrefs);
                 return;
@@ -155,7 +193,7 @@ on_apply_prefs(GtkButton *button,
         more_items;
         more_items = gtk_tree_model_iter_next(model, &iter)) {
                 HABIT *habit = NULL;
-                gtk_tree_model_get (model, &iter, COL_DATA, &habit, -1);
+                gtk_tree_model_get (model, &iter, 2, &habit, -1);
                 if (is_user_added_habit(appdata, habit)) {
                         g_ptr_array_add(appdata->habits, habit);
                 }
@@ -169,7 +207,7 @@ on_apply_prefs(GtkButton *button,
                 more_items;
                 more_items = gtk_tree_model_iter_next(model, &iter)) {
                         HABIT *item = NULL;
-                        gtk_tree_model_get (model, &iter, COL_DATA, &item, -1);
+                        gtk_tree_model_get (model, &iter, 2, &item, -1);
                         if (item == habit) {
                                 is_deleted = FALSE;
                                 break;
@@ -197,7 +235,13 @@ on_add_habit(GtkButton *button,
         GtkListStore *store = (GtkListStore *) gtk_tree_view_get_model (
                 habits_list);
         HABIT *habit = new_habit();
-        add_habit_to_store (store, habit);
+        GtkTreeIter iter;
+        gtk_list_store_append (store, &iter);
+        gtk_list_store_set (store, &iter, 
+                0, habit->name,
+                1, print_quittime(habit),
+                2, habit,
+                -1);
 }
 
 void
@@ -211,12 +255,12 @@ on_remove_habit(GtkButton *button,
         GtkTreeModel *model = NULL;
         if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
                 HABIT *habit = NULL;
-                gtk_tree_model_get (model, &iter, 
-                        COL_DATA, &habit,
-                        -1);
+                gchar *quittime = NULL;
+                gtk_tree_model_get (model, &iter, 1, &quittime, 2, &habit, -1);
                 if (is_user_added_habit(appdata, habit)) {
                         g_free(habit), habit = NULL;
                 }
+                g_free(quittime);
                 gtk_list_store_remove (GTK_LIST_STORE(model), &iter);
         }
 }
@@ -236,9 +280,17 @@ on_edit_habit(GtkButton *button,
                         return;
                 }
                 HABIT *habit = NULL;
-                gtk_tree_model_get (model, &iter, COL_DATA, &habit, -1);
-                
+                gtk_tree_model_get (model, &iter, 2, &habit, -1);
                 create_edit_window(habit);
         }
         gtk_window_present((GtkWindow *)appdata->windowHabit);
+}
+
+gchar *
+print_quittime(HABIT *habit)
+{
+        return g_strdup_printf("%02d.%02d.%d", 
+                habit->quittime.tm_mday,
+                habit->quittime.tm_mon + 1,
+                habit->quittime.tm_year + 1900);
 }

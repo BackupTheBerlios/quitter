@@ -23,10 +23,6 @@
 #include <gtk/gtk.h>
 #include "prefs.h"
 
-#define COL_NAME 0
-#define COL_DATA 1
-#define COL_NEW 2
-
 void
 create_stats_window();
 
@@ -40,14 +36,6 @@ update_stats (gpointer data);
 void
 on_stats_select_habit(GtkTreeSelection *selection, 
         gpointer data);
-        
-void
-add_habit_to_store(GtkListStore *list_store, 
-        HABIT* habit);
-        
-void
-show_habits_list(GtkTreeView *treeview, 
-        void *callback);
         
 gchar* 
 print_clean_time(struct tm cur_tm,
