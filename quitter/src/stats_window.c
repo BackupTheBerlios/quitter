@@ -77,13 +77,11 @@ create_stats_window()
         gtk_widget_show_all (appdata->windowStats);
                 
         if (appdata->habits->len < 2) {
-                GtkWidget *scrolledwindowHabits = lookup_widget (
-                        appdata->windowStats, 
-                        "scrolledwindowHabits");
-                gtk_widget_hide(scrolledwindowHabits);
+                GtkWidget *treeviewHabits = lookup_widget (appdata->windowStats, 
+                        "treeviewHabits");
+                gtk_widget_hide (treeviewHabits);
                         
-                GtkWidget *frameTotals = lookup_widget (
-                        appdata->windowStats,
+                GtkWidget *frameTotals = lookup_widget (appdata->windowStats,
                         "frameTotals");
                 gtk_widget_hide(frameTotals);
         }

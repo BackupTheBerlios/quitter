@@ -1,8 +1,8 @@
 [Project]
 FileName=quitter-devcpp.dev
-Name=quitter-devcpp
+Name=quitter
 UnitCount=23
-Type=1
+Type=0
 Ver=1
 ObjFiles=
 Includes=C:\Dev-Cpp\lib\glib-2.0\include;C:\Dev-Cpp\lib\gtk-2.0\include;C:\Dev-Cpp\include\gtk-2.0;C:\Dev-Cpp\include\atk-1.0;C:\Dev-Cpp\include\glib-2.0;C:\Dev-Cpp\include\pango-1.0;"C:\Program Files\Common Files\GTK\2.0\include\libxml2"
@@ -17,8 +17,8 @@ IsCpp=0
 Icon=
 ExeOutput=
 ObjectOutput=
-OverrideOutput=0
-OverrideOutputName=quitter-devcpp.exe
+OverrideOutput=1
+OverrideOutputName=quitter.exe
 HostApplication=
 Folders=
 CommandLine=

@@ -1,4 +1,4 @@
-# Project: quitter-devcpp
+# Project: quitter
 # Makefile created by Dev-C++ 4.9.9.0
 
 CPP  = g++.exe
@@ -7,23 +7,23 @@ WINDRES = windres.exe
 RES  = 
 OBJ  = src/appdata.o src/callbacks.o src/edit_window.o src/interface.o src/main.o src/prefs.o src/prefs_window.o src/quitterapplet.o src/stats_window.o src/support.o src/windowposition.o src/about_window.o $(RES)
 LINKOBJ  = src/appdata.o src/callbacks.o src/edit_window.o src/interface.o src/main.o src/prefs.o src/prefs_window.o src/quitterapplet.o src/stats_window.o src/support.o src/windowposition.o src/about_window.o $(RES)
-LIBS =  -L"C:/Dev-Cpp/lib" -LC:/PROGRA~1/COMMON~1/GTK/2.0/lib -lgtk-win32-2.0 -lgdk-win32-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -lpangowin32-1.0 -lgdi32 -lpango-1.0 -lgobject-2.0 -lgmodule-2.0 -llibxml2 -lglib-2.0 -lintl -liconv  
+LIBS =  -L"C:/Dev-Cpp/lib" -mwindows -LC:/PROGRA~1/COMMON~1/GTK/2.0/lib -lgtk-win32-2.0 -lgdk-win32-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -lpangowin32-1.0 -lgdi32 -lpango-1.0 -lgobject-2.0 -lgmodule-2.0 -llibxml2 -lglib-2.0 -lintl -liconv  
 INCS =  -I"C:/Dev-Cpp/include"  -I"C:/Dev-Cpp/lib/glib-2.0/include"  -I"C:/Dev-Cpp/lib/gtk-2.0/include"  -I"C:/Dev-Cpp/include/gtk-2.0"  -I"C:/Dev-Cpp/include/atk-1.0"  -I"C:/Dev-Cpp/include/glib-2.0"  -I"C:/Dev-Cpp/include/pango-1.0"  -I"C:/Program Files/Common Files/GTK/2.0/include/libxml2" 
 CXXINCS =  -I"C:/Dev-Cpp/include/c++/3.3.1"  -I"C:/Dev-Cpp/include/c++/3.3.1/mingw32"  -I"C:/Dev-Cpp/include/c++/3.3.1/backward"  -I"C:/Dev-Cpp/lib/gcc-lib/mingw32/3.3.1/include"  -I"C:/Dev-Cpp/include"  -I"C:/Dev-Cpp/lib/glib-2.0/include"  -I"C:/Dev-Cpp/lib/gtk-2.0/include"  -I"C:/Dev-Cpp/include/gtk-2.0"  -I"C:/Dev-Cpp/include/atk-1.0"  -I"C:/Dev-Cpp/include/glib-2.0"  -I"C:/Dev-Cpp/include/pango-1.0"  -I"C:/Program Files/Common Files/GTK/2.0/include/libxml2" 
-BIN  = quitter-devcpp.exe
+BIN  = quitter.exe
 CXXFLAGS = $(CXXINCS)  
 CFLAGS = $(INCS)  
 
 .PHONY: all all-before all-after clean clean-custom
 
-all: all-before quitter-devcpp.exe all-after
+all: all-before quitter.exe all-after
 
 
 clean: clean-custom
 	rm -f $(OBJ) $(BIN)
 
 $(BIN): $(OBJ)
-	$(CC) $(LINKOBJ) -o "quitter-devcpp.exe" $(LIBS)
+	$(CC) $(LINKOBJ) -o "quitter.exe" $(LIBS)
 
 src/appdata.o: src/appdata.c
 	$(CC) -c src/appdata.c -o src/appdata.o $(CFLAGS)
