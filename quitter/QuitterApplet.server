@@ -1,0 +1,29 @@
+<oaf_info>
+  <oaf_server iid="OAFIID:QuitterApplet_Factory" type="exe" location="/usr/bin/quitter">
+
+  <oaf_attribute name="repo_ids" type="stringv">
+    <item value="IDL:Bonobo/GenericFactory:1.0"/>
+    <item value="IDL:Bonobo/Unknown:1.0"/>
+  </oaf_attribute>
+  
+  <oaf_attribute name="name" type="string" value="Quitter Applet Factory"/>
+    <oaf_attribute name="description" type="string" value="Factory to create the quitter applet"/>
+  </oaf_server>
+
+  <oaf_server iid="OAFIID:QuitterApplet" type="factory" location="OAFIID:QuitterApplet_Factory">
+    <oaf_attribute name="repo_ids" type="stringv">
+      <item value="IDL:GNOME/Vertigo/PanelAppletShell:1.0"/>
+      <item value="IDL:Bonobo/Control:1.0"/>
+      <item value="IDL:Bonobo/Unknown:1.0"/>
+    </oaf_attribute>
+  
+    <oaf_attribute name="name" type="string" value="Quitter"/>
+    <oaf_attribute name="description" type="string" 
+        value="Quitter helps you kick bad habits"/>
+    <oaf_attribute name="description-et" type="string" 
+        value="Quitter aitab halbadest harjumustest loobuda"/>
+    <oaf_attribute name="panel:category" type="string" value="Accessories"/>
+    <oaf_attribute name="panel:category-et" type="string" value="Tarvikud"/>
+    <oaf_attribute name="panel:icon" type="string" value="quitter.png"/>
+  </oaf_server>
+</oaf_info>
